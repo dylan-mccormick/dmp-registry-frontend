@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #074885;
+}
+
+@layer base {
+    body {
+        @apply font-sans;
+    }
+}
+
+@utility button-link {
+    @apply text-primary hover:cursor-pointer enabled:active:text-blue-600 underline disabled:no-underline disabled:hover:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility button-secondary {
+    @apply enabled:hover:text-primary hover:cursor-pointer disabled:opacity-50 enabled:active:text-blue-600 py-[2px] border-2 px-[6px] rounded border-primary disabled:hover:cursor-not-allowed;
+}
+
+@utility button-primary {
+    @apply hover:cursor-pointer enabled:active:bg-blue-600 py-1 px-2 bg-primary rounded text-white disabled:hover:cursor-not-allowed disabled:opacity-50;
+}
