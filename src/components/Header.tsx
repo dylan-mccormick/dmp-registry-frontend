@@ -1,22 +1,43 @@
 import { CircleUserRound, Menu } from "lucide-react";
-import { NavContext } from "./NavContext";
+import { NavContext } from "../context/NavContext";
 import { useContext } from "react";
 import { Link } from "react-router";
+import apiClient from "../apiClient";
 
 interface HeaderProps {
     loggedInUser?: string;
     hideNavbar?: boolean;
 }
 
-const LogoutComponent = (props: HeaderProps) => <>
-<div className="flex-col items-center">
+const LogoutComponent = (props: HeaderProps) => {
+
+    const logoutUser = () => {
+        apiClient.post("/api/v1/users/logout", {})
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Logout failed");
+                }
+                return res.json();
+            })
+            .then(() => {
+                // Redirect to home page after logout
+                window.location.href = "/home";
+            })
+            .catch(err => {
+                console.error(err);
+                alert("An error occurred while logging out. Please try again.");
+            });
+    }
+
+return <div className="flex-col items-center">
     <div className="w-full flex">
         <CircleUserRound />
         <p className="ml-4">{props.loggedInUser}</p>
     </div>
-    <button className="button-link w-full text-right">Log Out</button>
+    <button className="button-link w-full text-right" onClick={logoutUser}>Log Out</button>
 </div>
-</>
+
+}
 
 const LoginComponent = () => <>
     <Link className="button-link" to="/login">Log In</Link>

@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import type { NavbarComponentProps } from "./NavbarComponent";
 import NavbarComponent from "./NavbarComponent";
-import { NavContext } from "./NavContext";
+import { NavContext } from "../context/NavContext";
 
 interface NavbarProps {
     navItems: NavbarComponentProps[];

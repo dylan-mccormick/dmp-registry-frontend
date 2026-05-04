@@ -1,8 +1,11 @@
-import StandardLayout from "./components/StandardLayout";
+import StandardLayout from "../components/StandardLayout";
 import { Link } from "react-router";
 
 const Home = () => <>
-    <StandardLayout navItems={[]}>
+
+<title>DMP Registry</title>
+
+    <StandardLayout>
         <main className="text-center flex-1 p-4 overflow-y-auto">
 
             <img src="https://cdn.mnmzc.us.to/logos/dmp-black.png" alt="DMP Service Logo" className="mx-auto mt-16 mb-4 w-32 h-32" />

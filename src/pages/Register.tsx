@@ -1,0 +1,91 @@
+import { useContext, useState, type FormEvent } from "react";
+import StandardLayout from "../components/StandardLayout"
+import { NavContext } from "../context/NavContext";
+import apiClient from "../apiClient";
+
+const Register = () => {
+
+    const { setBanner } = useContext(NavContext);
+
+    const [ username, setUsername ] = useState("");
+    const [ email, setEmail ] = useState("");
+    const [ password, setPassword ] = useState("");
+    const [ confirmPassword, setConfirmPassword ] = useState("");
+
+    const [ loading, setLoading ] = useState(false);
+
+    const handleSuccess = () => {
+        // redirect to dashboard
+        window.location.href = "/dashboard";
+    }
+
+    const handleError = (message: string) => {
+        setBanner({ message, level: "error" });
+    }
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (password !== confirmPassword) {
+            handleError("Passwords do not match");
+            return;
+        }
+
+        setBanner(null);
+        setLoading(true);
+
+        apiClient.post("/api/v1/users/register", {
+            username,
+            email,
+            password
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.error) {
+                handleError(res.error);
+                return;
+            }
+
+            handleSuccess();
+        })
+        .catch(err => {
+            console.error(err);
+            handleError("Registration failed. Please try again.");
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+    }
+
+    return <StandardLayout>
+        <main className="text-center flex-1 p-4 overflow-y-auto">
+            <h1 className="text-2xl font-bold mb-4 mt-16">Register</h1>
+            <p>Please enter your details to create an account.</p>
+            <form className="mt-4 max-w-sm mx-auto" onSubmit={handleSubmit}>
+                <div className="mb-4">
+                    <label htmlFor="username" className="block text-left mb-2">Username</label>
+                    <input type="text" id="username" name="username" className="w-full px-3 py-2 border rounded" onChange={e => setUsername(e.target.value)} required />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="email" className="block text-left mb-2">Email</label>
+                    <input type="email" id="email" name="email" className="w-full px-3 py-2 border rounded" onChange={e => setEmail(e.target.value)} required />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="password" className="block text-left mb-2">Password</label>
+                    <input type="password" id="password" name="password" className="w-full px-3 py-2 border rounded" onChange={e => setPassword(e.target.value)} required />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="confirm-password" className="block text-left mb-2">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" className="w-full px-3 py-2 border rounded" onChange={e => setConfirmPassword(e.target.value)} required />
+                </div>
+                <button type="submit" className="button-primary w-full" disabled={loading}>
+                    {loading ? "Registering..." : "Register"}
+                </button>
+                <button type="button" className="button-secondary mt-2 w-full" onClick={() => window.location.href = "/login"} disabled={loading}>Already have an account? Log In</button>
+            </form>
+        </main>
+    </StandardLayout>
+
+}
+
+export default Register;
