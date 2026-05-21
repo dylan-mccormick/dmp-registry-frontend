@@ -9,6 +9,7 @@ export const UserPermission = {
 export type UserPermission = typeof UserPermission[keyof typeof UserPermission];
 export interface UserContextInterface {
     id: string;
+    email: string;
     username: string;
     permissions: UserPermission[]
 }

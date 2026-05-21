@@ -5,4 +5,14 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    watch: {
+      usePolling: true,
+    },
+    // Forwards errors and console.error / console.warn
+    cors: true,
+    hmr: {
+      overlay: true,
+    }
+ }
 })

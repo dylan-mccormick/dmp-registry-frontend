@@ -25,6 +25,7 @@ const Login = () => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
+        setBanner(null); // clear existing banners
 
         apiClient.post("/api/v1/users/login", {
             username,
