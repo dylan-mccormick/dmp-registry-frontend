@@ -27,7 +27,7 @@ jobs:
           push: true
           build-args: |
             VITE_API_URL=https://api.registry.mnmzc.us.to
-          tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/dmp-frontend:latest
+          tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/dmp-registry-frontend:latest
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1
