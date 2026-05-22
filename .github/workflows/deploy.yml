@@ -26,7 +26,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            VITE_API_URL=https://api.registry.mnmzc.us.to
+            VITE_API_URL=https://registry-api.mnmzc.us.to
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/dmp-registry-frontend:latest
 
       - name: Deploy to VM
