@@ -37,8 +37,8 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-6" >
                 <h1 className="text-3xl font-bold" >Registries Directory</h1>
                 <button className={`button ${!createRegistries ? "hidden" : ""} button-primary`} onClick={() => window.location.href = "/registries/new"} >Create Registry</button>
-                <span>Hello Registries!</span>
             </div>
+            <span>Hello Registries!</span>
         </div>
     </StandardLayout>
     </>
