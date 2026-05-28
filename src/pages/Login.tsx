@@ -2,19 +2,25 @@ import { useContext, useState } from "react";
 import StandardLayout from "../components/StandardLayout";
 import { NavContext } from "../context/NavContext";
 import apiClient from "../apiClient";
+import { useNavigate } from "react-router";
+import { UserContext } from "../context/UserContext";
 
 const Login = () => {
 
     const { setBanner } = useContext(NavContext);
+    const { setResetUser } = useContext(UserContext);
 
     const [ username, setUsername ] = useState("");
     const [ password, setPassword ] = useState("");
 
     const [ loading, setLoading ] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleSuccess = () => {
-        // redirect to dashboard
-        window.location.href = "/dashboard";
+        // redirect to home
+
+        navigate("/home");
     }
 
     const handleError = (message: string) => {
@@ -31,14 +37,17 @@ const Login = () => {
             username,
             password
         })
-        .then(res => res.json())
         .then(res => {
-            if (res.error) {
-                console.log(res.error.message);
-                handleError(res.error);
+            if (!res.ok) {
+                if (res.status === 401) {
+                    handleError("Invalid username or password.");
+                    return;
+                }
+                handleError("Login failed. Please try again.");
                 return;
             }
 
+            setResetUser(prev => prev + 1); // trigger user data refresh in App.tsx
             handleSuccess();
         })
         .catch(err => {
@@ -51,7 +60,7 @@ const Login = () => {
     return <>
     <title>Login</title>
 
-        <StandardLayout>
+        <StandardLayout title="Login">
             <main className="text-center flex-1 p-4 overflow-y-auto">
                 <h1 className="text-2xl font-bold mb-4 mt-16">Login</h1>
                 <p>Please enter your credentials to log in.</p>
@@ -67,10 +76,10 @@ const Login = () => {
                     <button type="submit" className="button-primary w-full" disabled={loading}>
                         {loading ? "Logging in..." : "Log In"}
                     </button>
-                    <button type="button" className="button-secondary mt-2 w-full" disabled={loading} onClick={() => window.location.href = "/register"}>
+                    <button type="button" className="button-secondary mt-2 w-full" disabled={loading} onClick={() => navigate("/register")}>
                         Don't have an account? Register
                     </button>
-                    <button type="button" className="button-link mt-2 w-full" onClick={() => window.location.href = "/forgot-password"}>
+                    <button type="button" className="button-link mt-2 w-full" onClick={() => navigate("/forgot-password")}>
                         Forgot Password?
                     </button>
                 </form>

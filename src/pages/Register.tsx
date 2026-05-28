@@ -2,10 +2,15 @@ import { useContext, useState, type FormEvent } from "react";
 import StandardLayout from "../components/StandardLayout"
 import { NavContext } from "../context/NavContext";
 import apiClient from "../apiClient";
+import { useNavigate } from "react-router";
+import { UserContext } from "../context/UserContext";
 
 const Register = () => {
 
     const { setBanner } = useContext(NavContext);
+    const { setResetUser } = useContext(UserContext);
+
+    const navigate = useNavigate();
 
     const [ username, setUsername ] = useState("");
     const [ email, setEmail ] = useState("");
@@ -15,8 +20,8 @@ const Register = () => {
     const [ loading, setLoading ] = useState(false);
 
     const handleSuccess = () => {
-        // redirect to dashboard
-        window.location.href = "/dashboard";
+        // redirect to home
+        navigate("/home");
     }
 
     const handleError = (message: string) => {
@@ -49,13 +54,19 @@ const Register = () => {
             email,
             password
         })
-        .then(res => res.json())
         .then(res => {
-            if (res.error) {
-                handleError(res.error);
+            if (!res.ok) {
+                if (res.status === 400) {
+                    return res.json().then(data => {
+                        handleError(data.message || "Registration failed. Please check your input and try again.");
+                    });
+                } else {
+                    handleError("Registration failed. Please try again.");
+                }
                 return;
             }
 
+            setResetUser(prev => prev + 1); // trigger user data refresh in App.tsx
             handleSuccess();
         })
         .catch(err => {
@@ -67,7 +78,7 @@ const Register = () => {
         });
     }
 
-    return <StandardLayout>
+    return <StandardLayout title="Register">
         <main className="text-center flex-1 p-4 overflow-y-auto">
             <h1 className="text-2xl font-bold mb-4 mt-16">Register</h1>
             <p>Please enter your details to create an account.</p>
@@ -91,7 +102,7 @@ const Register = () => {
                 <button type="submit" className="button-primary w-full" disabled={loading}>
                     {loading ? "Registering..." : "Register"}
                 </button>
-                <button type="button" className="button-secondary mt-2 w-full" onClick={() => window.location.href = "/login"} disabled={loading}>Already have an account? Log In</button>
+                <button type="button" className="button-secondary mt-2 w-full" onClick={() => navigate("/login")} disabled={loading}>Already have an account? Log In</button>
             </form>
         </main>
     </StandardLayout>

@@ -1,8 +1,9 @@
 import { CircleUserRound, Menu } from "lucide-react";
 import { NavContext } from "../context/NavContext";
 import { useContext } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import apiClient from "../apiClient";
+import { UserContext } from "../context/UserContext";
 
 interface HeaderProps {
     loggedInUser?: string;
@@ -10,6 +11,8 @@ interface HeaderProps {
 }
 
 const LogoutComponent = (props: HeaderProps) => {
+    const navigate = useNavigate();
+    const {  setResetUser } = useContext(UserContext);
 
     const logoutUser = () => {
         apiClient.post("/api/v1/users/logout", {})
@@ -20,8 +23,8 @@ const LogoutComponent = (props: HeaderProps) => {
                 return res.json();
             })
             .then(() => {
-                // Redirect to home page after logout
-                window.location.href = "/home";
+                setResetUser(prev => prev + 1); // trigger user data refresh in App.tsx
+                navigate("/home");
             })
             .catch(err => {
                 console.error(err);
@@ -29,13 +32,13 @@ const LogoutComponent = (props: HeaderProps) => {
             });
     }
 
-return <div className="flex-col items-center">
+return <><div className="flex-col items-center">
     <div className="w-full flex">
         <CircleUserRound />
         <p className="ml-4">{props.loggedInUser}</p>
     </div>
     <button className="button-link w-full text-right" onClick={logoutUser}>Log Out</button>
-</div>
+</div></>;
 
 }
 

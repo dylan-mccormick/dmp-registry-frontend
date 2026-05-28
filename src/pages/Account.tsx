@@ -1,12 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import StandardLayout from "../components/StandardLayout"
-import { Gauge, UsersRound, Settings } from "lucide-react";
-import type { NavbarComponentProps } from "../components/NavbarComponent";
 import { UserContext } from "../context/UserContext";
 import apiClient from "../apiClient";
 import { ModalContext } from "../context/ModalContext";
 import { NavContext } from "../context/NavContext";
 import { useNavigate } from "react-router";
+import { NavbarLevel } from "../context/NavbarLevel";
 
 const Account = () => {
 
@@ -14,23 +13,8 @@ const Account = () => {
     const { setBanner } = useContext(NavContext);
     const { showModal, closeModal } = useContext(ModalContext);
 
-    const [ navbarItems, setNavbarItems ] = useState<NavbarComponentProps[]>([]);
     const [ loading, setLoading ] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const items: NavbarComponentProps[] = [
-        { text: "Dashboard", to: "/dashboard", icon: <Gauge /> }
-        ];
-
-        if (user?.permissions.includes("MANAGE_USERS")) {
-            items.push({ text: "User Management", to: "/users", icon: <UsersRound /> });
-        }
-
-        items.push({ text: "Account", to: "/profile", icon: <Settings /> });
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setNavbarItems(items);
-    }, [user]);
 
     const handleChangePassword = async () => {
         showModal({
@@ -174,6 +158,13 @@ const Account = () => {
         const username = formData.get("username") as string;
         const email = formData.get("email") as string;
 
+        // test username for regex
+        if (!username || username.length < 3 || !username.match(/^\w+$/)) {
+            setBanner({ message: "Username must be at least 3 characters long and contain only letters, numbers, and underscores.", level: "error" });
+            setLoading(false);
+            return;
+        }
+
         // send the update request to the server
         const res = await apiClient.patch("/api/v1/users/update/me", { username, email });
         if (!res.ok) {
@@ -203,7 +194,7 @@ const Account = () => {
 
     return <>
 
-    <StandardLayout navItems={navbarItems}>
+    <StandardLayout navbarLevel={NavbarLevel.TOP} title="Account Settings">
         <div className="p-8" >
             <h1 className="text-3xl font-bold mb-16" >Account Settings</h1>
             <div className="flex flex-col items-center" >
