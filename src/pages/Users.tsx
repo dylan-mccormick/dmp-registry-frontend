@@ -1,11 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import StandardLayout from "../components/StandardLayout"
-import { Gauge, UsersRound, Settings } from "lucide-react";
-import type { NavbarComponentProps } from "../components/NavbarComponent";
-import { UserContext } from "../context/UserContext";
 import apiClient from "../apiClient";
 import { NavContext } from "../context/NavContext";
 import { useNavigate } from "react-router";
+import { NavbarLevel } from "../context/NavbarLevel";
 
 const UserCard = ({ id, username, email }: { id: number; username: string; email: string }) => {
     const navigate = useNavigate();
@@ -28,27 +26,10 @@ const UserCard = ({ id, username, email }: { id: number; username: string; email
 
 const Users = () => {
 
-    const { user } = useContext(UserContext);
-
-    const [ navbarItems, setNavbarItems ] = useState<NavbarComponentProps[]>([]);
     const [ loading, setLoading ] = useState(false);
     const [ users, setUsers ] = useState<{ id: number; username: string; email: string }[]>([]);
 
     const { setBanner } = useContext(NavContext);
-
-    useEffect(() => {
-        const items: NavbarComponentProps[] = [
-        { text: "Dashboard", to: "/dashboard", icon: <Gauge /> }
-        ];
-
-        if (user?.permissions.includes("MANAGE_USERS")) {
-            items.push({ text: "User Management", to: "/users", icon: <UsersRound /> });
-        }
-
-        items.push({ text: "Account", to: "/profile", icon: <Settings /> });
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setNavbarItems(items);
-    }, [user]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -72,12 +53,12 @@ const Users = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [setBanner]);
 
 
     return <>
 
-    <StandardLayout navItems={navbarItems}>
+    <StandardLayout navbarLevel={NavbarLevel.TOP} title="Users Directory" >
         <div className="p-8" >
             <div className="mb-6" >
                 <h1 className="text-3xl font-bold mb-6" >Users Directory</h1>

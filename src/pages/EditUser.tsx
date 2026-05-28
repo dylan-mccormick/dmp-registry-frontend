@@ -206,6 +206,8 @@ const EditUser = () => {
     const { user } = useContext(UserContext);
     const { setBanner } = useContext(NavContext);
 
+    const navigate = useNavigate();
+
     const [ navbarItems, setNavbarItems ] = useState<NavbarComponentProps[]>([]);
     const [ activeTab, setActiveTab ] = useState<Tab>('registries');
 
@@ -228,9 +230,9 @@ const EditUser = () => {
     // navigate away if no id is provided
     useEffect(() => {
         if (!id) {
-            window.location.href = "/users";
+            navigate("/users");
         }
-    }, [id]);
+    }, [id, navigate]);
 
     // get details about the user with the provided id
     useEffect(() => {

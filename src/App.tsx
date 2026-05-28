@@ -16,12 +16,14 @@ import Account from './pages/Account.tsx';
 import EditUser from './pages/EditUser.tsx';
 import { ModalContext, type ModalConfig } from './context/ModalContext.tsx';
 import Modal from './components/Modal.tsx';
+import CreateRegistry from './pages/CreateRegistry.tsx';
 
 const App = () => {
     const [ navOpen, setNavOpen ] = useState(() => window.innerWidth >= 640);
     const [ banner, setBanner ] = useState<BannerContext | null>(null);
     const [ modal, setModal ] = useState<ModalConfig | null>(null);
     const [ user, setUser ] = useState<UserContextInterface | null>(null);
+    const [ resetUser, setResetUser ] = useState(0);
     const [ loading, setLoading ] = useState(true);
 
     const showModal = (config: ModalConfig) => setModal(config);
@@ -67,7 +69,7 @@ const App = () => {
         };
 
         fetchUser();
-    }, []);
+    }, [resetUser]);
 
     if (loading) {
         return <div className="flex items-center justify-center h-screen">
@@ -76,7 +78,7 @@ const App = () => {
     }
 
     return <>
-        <UserContext.Provider value={{ user, setUser }}>
+        <UserContext.Provider value={{ user, setUser, resetUser, setResetUser }} >
             <NavContext.Provider value={{ navOpen, setNavOpen, banner, setBanner }} >
                 <ModalContext.Provider value={{ showModal, closeModal }} >
                     {modal && <Modal config={modal} onClose={closeModal} />}
@@ -87,7 +89,8 @@ const App = () => {
                             <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
                             <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                             <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
-                            <Route path="/login" element={<Login />} />
+                            <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
+                            <Route path="/login" element={<Login />}  />
                             <Route path="/register" element={<Register />} />
                             <Route path="/" element={<Home />} />
                             <Route path="*" element={ <PageNotFound /> } />

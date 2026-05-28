@@ -5,15 +5,18 @@ import type { NavbarComponentProps } from "./NavbarComponent";
 import { NavContext } from "../context/NavContext";
 import Banner from "./Banner";
 import { UserContext } from "../context/UserContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import { Gauge, Settings, UsersRound } from "lucide-react";
 
 interface StandardLayoutProps {
     children: ReactNode;
     title?: string;
     autoGenerateUsersNav?: boolean;
     navItems?: NavbarComponentProps[];
+    navbarLevel?: NavbarLevel;
 }
 
-const StandardLayout = ({ children, title, navItems }: StandardLayoutProps) => {
+const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayoutProps) => {
 
     const { navOpen, setNavOpen } = useContext(NavContext);
     const { user } = useContext(UserContext);
@@ -23,12 +26,28 @@ const StandardLayout = ({ children, title, navItems }: StandardLayoutProps) => {
         else document.title = 'DMP Registry';
     }, [title]);
 
+    const renderedNavItems = (() => {
+        const items: NavbarComponentProps[] = [];
+
+        if (navbarLevel === NavbarLevel.TOP) {
+            items.push({ text: "Dashboard", to: "/dashboard", icon: <Gauge /> });
+
+            if (user?.permissions.includes("MANAGE_USERS")) {
+                items.push({ text: "User Management", to: "/users", icon: <UsersRound /> });
+            }
+
+            items.push({ text: "Account", to: "/profile", icon: <Settings /> });
+        }
+
+        return [...(navItems || []), ...items];
+    })();
+
     return (
         <>
             <div className="flex flex-col h-screen overflow-hidden">
-                <Header loggedInUser={user?.username || ""} hideNavbar={(navItems || []).length == 0} />
+                <Header loggedInUser={user?.username || ""} hideNavbar={(renderedNavItems || []).length == 0} />
                 <div className="flex flex-1 overflow-hidden">
-                    {(navItems || []).length > 0 && <Navbar navItems={navItems || []} />}
+                    {(renderedNavItems || []).length > 0 && <Navbar navItems={renderedNavItems || []} />}
 
                     {/* Backdrop */}
                     {navOpen && (

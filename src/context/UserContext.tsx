@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createContext } from "react";
+import { createContext, type SetStateAction } from "react";
 
 export const UserPermission = {
     CREATE_REGISTRY: "CREATE_REGISTRY",
@@ -17,4 +17,6 @@ export interface UserContextInterface {
 export const UserContext = createContext({
     user: null as UserContextInterface | null,
     setUser: (_: UserContextInterface | null) => { },
+    resetUser: 0,
+    setResetUser: (_: SetStateAction<number>) => { }
 });
