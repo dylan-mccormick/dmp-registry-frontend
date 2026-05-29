@@ -62,9 +62,9 @@ const Dashboard = () => {
 
     <StandardLayout navbarLevel={ NavbarLevel.TOP } title="Registries Directory">
         <div className="p-8" >
-            <div className="flex justify-between items-center mb-6" >
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6" >
                 <h1 className="text-3xl font-bold" >Registries Directory</h1>
-                <button className={`button ${!createRegistries ? "hidden" : ""} button-primary`} onClick={() => navigate("/registries/new")} >Create Registry</button>
+                <button className={`button ${!createRegistries ? "hidden" : ""} button-primary mt-2 sm:mt-0`} onClick={() => navigate("/registries/new")} >Create Registry</button>
             </div>
 
             {loading ? (
