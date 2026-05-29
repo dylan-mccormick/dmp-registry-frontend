@@ -17,6 +17,7 @@ import EditUser from './pages/EditUser.tsx';
 import { ModalContext, type ModalConfig } from './context/ModalContext.tsx';
 import Modal from './components/Modal.tsx';
 import CreateRegistry from './pages/CreateRegistry.tsx';
+import RegistryDashboard from './pages/RegistryDashboard.tsx';
 
 const App = () => {
     const [ navOpen, setNavOpen ] = useState(() => window.innerWidth >= 640);
@@ -90,6 +91,7 @@ const App = () => {
                             <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                             <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
                             <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
+                            <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
                             <Route path="/login" element={<Login />}  />
                             <Route path="/register" element={<Register />} />
                             <Route path="/" element={<Home />} />
