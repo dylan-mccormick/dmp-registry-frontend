@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 interface RegistryMetadata {
     id: string;
     name: string;
-    owner: string;
+    owner?: string;
     type: string;
     createdAt: string;
 }
@@ -29,7 +29,7 @@ const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
     return <>
     <div className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer text-left" onClick={() => navigate(`/registries/${registry.id}`)} >
         <h2 className="text-xl font-semibold mb-2" >{registry.name}</h2>
-        <p className="text-gray-600 mb-1" >Owner: {registry.owner}</p>
+        <p className="text-gray-600 mb-1" >Owner: {registry.owner ?? "Unassigned"}</p>
         <p className="text-gray-600 mb-1" >Type: {registry.type}</p>
         <p className="text-gray-500 text-sm" >Created: {new Date(registry.createdAt).toLocaleDateString()}</p>
     </div>
