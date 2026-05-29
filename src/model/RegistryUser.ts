@@ -1,5 +1,3 @@
-import type { Registry } from "./Registry";
-
 export const RegistryUserPermissions = {
     MANAGE_USERS: "MANAGE_USERS",
     READ_AGENTS: "READ_AGENTS",
@@ -13,6 +11,6 @@ export type RegistryUserPermissions = typeof RegistryUserPermissions[keyof typeo
 export interface RegistryUser {
     id: number,
     username: string,
-    registry: Registry,
-    permissions: RegistryUserPermissions[]
+    registryId: number,
+    permissions?: RegistryUserPermissions[]
 }
