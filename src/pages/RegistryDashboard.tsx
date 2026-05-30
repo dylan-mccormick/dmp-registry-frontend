@@ -111,7 +111,17 @@ const RegistryDashboard = () => {
     return (
         <>
             <StandardLayout navbarLevel={NavbarLevel.REGISTRY}>
-                {registry?.name}
+                <div className="p-8">
+                    <span className="text-3xl font-bold mb-16">{registry?.name}</span>
+
+                    <div className="mt-4">
+                        {(() => {
+                            switch (registry?.type) {
+                                default: return <div className="border-red-500 bg-red-200 border br rounded p-4 text-red-900" >Sorry, the controller for this registry type has not yet been implemented.</div>
+                            }
+                        })()}
+                    </div>
+                </div>
             </StandardLayout>
         </>
     );

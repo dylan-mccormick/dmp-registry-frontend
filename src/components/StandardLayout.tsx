@@ -6,7 +6,7 @@ import { NavContext } from "../context/NavContext";
 import Banner from "./Banner";
 import { UserContext } from "../context/UserContext";
 import { NavbarLevel } from "../context/NavbarLevel";
-import { Database, Gauge, Link, Settings, SlidersHorizontal, Undo2, UserKey, Users } from "lucide-react";
+import { Database, FileClock, Gauge, Link, Settings, SlidersHorizontal, Undo2, UserKey, Users } from "lucide-react";
 import { useParams } from "react-router";
 import { RegistryContext } from "../context/RegistryContext";
 import { RegistryUserPermissions } from "../model/RegistryUser";
@@ -50,6 +50,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
             items.push({ text: "Registry Dashboard", icon: <Database />, to: `/registries/${registryId}` });
             if (localUser?.permissions?.includes(RegistryUserPermissions.READ_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
             if (localUser?.permissions?.includes(RegistryUserPermissions.READ_AGENTS)) items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
+            if (localUser?.isOwner) items.push({ text: "Audit Log", icon: <FileClock />, to: `/registries/${registryId}/logs` });
             if (localUser?.isOwner) items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });
         }
 
