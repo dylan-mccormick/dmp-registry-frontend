@@ -1,4 +1,4 @@
-import { useContext, useEffect, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, type ReactNode } from "react";
 import Header from "./Header";
 import Navbar from "./Navbar";
 import type { NavbarComponentProps } from "./NavbarComponent";
@@ -8,6 +8,8 @@ import { UserContext } from "../context/UserContext";
 import { NavbarLevel } from "../context/NavbarLevel";
 import { Database, Gauge, Link, Settings, SlidersHorizontal, Undo2, UserKey, Users } from "lucide-react";
 import { useParams } from "react-router";
+import { RegistryContext } from "../context/RegistryContext";
+import { RegistryUserPermissions } from "../model/RegistryUser";
 
 interface StandardLayoutProps {
     children: ReactNode;
@@ -21,6 +23,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
 
     const { navOpen, setNavOpen } = useContext(NavContext);
     const { user } = useContext(UserContext);
+    const { localUser } = useContext(RegistryContext);
 
     const { registryId } = useParams();
 
@@ -29,7 +32,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
         else document.title = 'DMP Registry';
     }, [title]);
 
-    const renderedNavItems = (() => {
+    const renderedNavItems = useMemo(() => {
         const items: NavbarComponentProps[] = [];
 
         if (navbarLevel === NavbarLevel.TOP) {
@@ -45,13 +48,13 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
         if (navbarLevel === NavbarLevel.REGISTRY) {
             items.push({ text: "Return to Dashboard", icon: <Undo2 />, to: "/dashboard" });
             items.push({ text: "Registry Dashboard", icon: <Database />, to: `/registries/${registryId}` });
-            items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
-            items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
-            items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });
+            if (localUser?.permissions?.includes(RegistryUserPermissions.READ_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
+            if (localUser?.permissions?.includes(RegistryUserPermissions.READ_AGENTS)) items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
+            if (localUser?.isOwner) items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });
         }
 
         return [...(navItems || []), ...items];
-    })();
+    }, [ navItems, navbarLevel, registryId, user, localUser ]);
 
     return (
         <>

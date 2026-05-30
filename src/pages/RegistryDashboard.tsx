@@ -8,15 +8,18 @@ import { NavContext } from "../context/NavContext";
 import apiClient from "../apiClient";
 import { coerceRegistryTypeFromString } from "../model/RegistryType";
 import type { Registry } from "../model/Registry";
+import { UserContext } from "../context/UserContext";
+import { coerceRegistryUserPermissionFromString } from "../model/RegistryUser";
 
 const RegistryDashboard = () => {
     const { registryId } = useParams();
 
     const navigate = useNavigate();
 
-    const { registry, setRegistry } = useContext(RegistryContext);
+    const { registry, setRegistry, setLocalUser } = useContext(RegistryContext);
     const { showModal, closeModal } = useContext(ModalContext);
     const { setBanner } = useContext(NavContext);
+    const { user } = useContext(UserContext);
 
     const [loading, setLoading] = useState(true);
 
@@ -32,33 +35,54 @@ const RegistryDashboard = () => {
         navigate("/dashboard");
     }, [navigate, setBanner]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleHttp = async (res: Response): Promise<any> => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        }
+
+        return res.json();
+    }
+
     useEffect(() => {
+        setLocalUser(null);
+
         (async () => {
             try {
-                const res = await apiClient.get(
+                const detailsRes = await apiClient.get(
                     `/api/v1/registries/${registryId}/details`,
                 );
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-                }
-
-                const data = await res.json();
+                const detailsData = await handleHttp(detailsRes);
 
                 const baseRegistryDetails: Registry = {
-                    id: data.id,
-                    name: data.name,
-                    storageLocation: data.storageLocation,
-                    type: coerceRegistryTypeFromString(data.type),
-                    createdAt: new Date(data.createdAt),
-                    createdByUser: data.createdByUserId
+                    id: detailsData.id,
+                    name: detailsData.name,
+                    storageLocation: detailsData.storageLocation,
+                    type: coerceRegistryTypeFromString(detailsData.type),
+                    createdAt: new Date(detailsData.createdAt),
+                    createdByUser: detailsData.createdByUserId
                         ? {
-                              id: data.createdByUserId,
-                              username: data.creatorUsername,
-                              registryId: data.id,
+                              id: detailsData.createdByUserId,
+                              username: detailsData.creatorUsername,
+                              isOwner: true,
+                              registryId: detailsData.id,
                           }
                         : undefined,
                 };
+
+                // Load details about the user
+                const registryUserRes = await apiClient.get(`/api/v1/registries/${registryId}/permissions/me`);
+                const registryUserData = await handleHttp(registryUserRes);
+
+                if (user == null) kickbackUser();
+
+                setLocalUser({
+                    id: user!.id,
+                    username: user!.username,
+                    registryId: detailsData.id,
+                    isOwner: detailsData.createdByUserId == user!.id,
+                    permissions: registryUserData.map(coerceRegistryUserPermissionFromString)
+                });
 
                 setRegistry(baseRegistryDetails);
                 setLoading(false);
@@ -70,7 +94,7 @@ const RegistryDashboard = () => {
                 kickbackUser();
             }
         })();
-    }, [registryId, kickbackUser, setRegistry]);
+    }, [registryId, kickbackUser, setRegistry, setLocalUser, user]);
 
     useEffect(() => {
         if (loading) {
