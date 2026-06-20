@@ -21,6 +21,10 @@ import RegistryDashboard from './pages/RegistryDashboard.tsx';
 import type { Registry } from './model/Registry.ts';
 import { RegistryContext } from './context/RegistryContext.tsx';
 import type { RegistryUser } from './model/RegistryUser.ts';
+import RegistryUserManagement from './pages/RegistryUserManagement.tsx';
+import RegistryAgentManagement from './pages/RegistryAgentManagement.tsx';
+import RegistryAuditLog from './pages/RegistryAuditLog.tsx';
+import RegistrySettings from './pages/RegistrySettings.tsx';
 
 const App = () => {
     const [ navOpen, setNavOpen ] = useState(() => window.innerWidth >= 640);
@@ -98,6 +102,10 @@ const App = () => {
                                 <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
                                 <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
                                 <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/users" element={<ProtectedRoute><RegistryUserManagement /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/agents" element ={<ProtectedRoute><RegistryAgentManagement /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/logs" element={<ProtectedRoute><RegistryAuditLog /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/settings" element={<ProtectedRoute><RegistrySettings /></ProtectedRoute>} />
                                 <Route path="/login" element={<Login />}  />
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/" element={<Home />} />

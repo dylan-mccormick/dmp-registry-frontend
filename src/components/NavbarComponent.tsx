@@ -14,7 +14,7 @@ const NavbarComponent = ({ text, icon, to, disabled }: NavbarComponentProps) => 
     const { setNavOpen } = useContext(NavContext);
 
     return <>
-    <NavLink className={({ isActive }) => `flex rounded w-full hover:bg-gray-200 active:bg-gray-300 hover:cursor-pointer ${isActive ? 'font-bold' : ''} p-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} to={to} onClick={() => {
+    <NavLink end className={({ isActive }) => `flex rounded w-full hover:bg-gray-200 active:bg-gray-300 hover:cursor-pointer ${isActive ? 'font-bold' : ''} p-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} to={to} onClick={() => {
     if (window.innerWidth < 640) setNavOpen(false);
 }}>
         <div className="h-6 w-6 mr-2 flex items-center justify-center">
