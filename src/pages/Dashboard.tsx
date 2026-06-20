@@ -4,11 +4,12 @@ import { UserContext } from "../context/UserContext";
 import { NavbarLevel } from "../context/NavbarLevel";
 import apiClient from "../apiClient";
 import { useNavigate } from "react-router";
+import { RegistryContext } from "../context/RegistryContext";
 
 interface RegistryMetadata {
     id: string;
     name: string;
-    owner: string;
+    owner?: string;
     type: string;
     createdAt: string;
 }
@@ -26,10 +27,17 @@ const fetchRegistries = async () => {
 const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
     const navigate = useNavigate();
 
+    const { setRegistry } = useContext(RegistryContext);
+
+    const navigateAway = () => {
+        setRegistry(null);
+        navigate(`/registries/${registry.id}`);
+    }
+
     return <>
-    <div className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer text-left" onClick={() => navigate(`/registries/${registry.id}`)} >
+    <div className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer text-left" onClick={navigateAway} >
         <h2 className="text-xl font-semibold mb-2" >{registry.name}</h2>
-        <p className="text-gray-600 mb-1" >Owner: {registry.owner}</p>
+        <p className="text-gray-600 mb-1" >Owner: {registry.owner ?? "Unassigned"}</p>
         <p className="text-gray-600 mb-1" >Type: {registry.type}</p>
         <p className="text-gray-500 text-sm" >Created: {new Date(registry.createdAt).toLocaleDateString()}</p>
     </div>
@@ -49,7 +57,6 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchRegistries().then((data) => {
-            console.log(data);
             setRegistries(data);
             setLoading(false);
         }).catch((error) => {
@@ -62,9 +69,9 @@ const Dashboard = () => {
 
     <StandardLayout navbarLevel={ NavbarLevel.TOP } title="Registries Directory">
         <div className="p-8" >
-            <div className="flex justify-between items-center mb-6" >
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6" >
                 <h1 className="text-3xl font-bold" >Registries Directory</h1>
-                <button className={`button ${!createRegistries ? "hidden" : ""} button-primary`} onClick={() => navigate("/registries/new")} >Create Registry</button>
+                <button className={`button ${!createRegistries ? "hidden" : ""} button-primary mt-2 sm:mt-0`} onClick={() => navigate("/registries/new")} >Create Registry</button>
             </div>
 
             {loading ? (

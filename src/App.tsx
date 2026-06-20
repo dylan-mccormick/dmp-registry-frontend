@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard.tsx';
 import Home from './pages/Home.tsx';
 import { NavContext } from './context/NavContext.tsx';
 import { UserContext, UserPermission, type UserContextInterface } from './context/UserContext.tsx';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Register from './pages/Register.tsx';
 import Users from './pages/Users.tsx';
 import type { BannerContext } from './context/BannerContext.tsx';
@@ -17,17 +17,27 @@ import EditUser from './pages/EditUser.tsx';
 import { ModalContext, type ModalConfig } from './context/ModalContext.tsx';
 import Modal from './components/Modal.tsx';
 import CreateRegistry from './pages/CreateRegistry.tsx';
+import RegistryDashboard from './pages/RegistryDashboard.tsx';
+import type { Registry } from './model/Registry.ts';
+import { RegistryContext } from './context/RegistryContext.tsx';
+import type { RegistryUser } from './model/RegistryUser.ts';
+import RegistryUserManagement from './pages/RegistryUserManagement.tsx';
+import RegistryAgentManagement from './pages/RegistryAgentManagement.tsx';
+import RegistryAuditLog from './pages/RegistryAuditLog.tsx';
+import RegistrySettings from './pages/RegistrySettings.tsx';
 
 const App = () => {
     const [ navOpen, setNavOpen ] = useState(() => window.innerWidth >= 640);
     const [ banner, setBanner ] = useState<BannerContext | null>(null);
     const [ modal, setModal ] = useState<ModalConfig | null>(null);
     const [ user, setUser ] = useState<UserContextInterface | null>(null);
+    const [ registry, setRegistry ] = useState<Registry | null>(null);
+    const [ localUser, setLocalUser ] = useState<RegistryUser | null>(null);
     const [ resetUser, setResetUser ] = useState(0);
     const [ loading, setLoading ] = useState(true);
 
-    const showModal = (config: ModalConfig) => setModal(config);
-    const closeModal = () => setModal(null);
+    const showModal = useCallback((config: ModalConfig) => setModal(config), []);
+    const closeModal = useCallback(() => setModal(null), []);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -81,21 +91,28 @@ const App = () => {
         <UserContext.Provider value={{ user, setUser, resetUser, setResetUser }} >
             <NavContext.Provider value={{ navOpen, setNavOpen, banner, setBanner }} >
                 <ModalContext.Provider value={{ showModal, closeModal }} >
+                    <RegistryContext.Provider value={{ registry, setRegistry, localUser, setLocalUser }} >
                     {modal && <Modal config={modal} onClose={closeModal} />}
-                    <BrowserRouter>
-                        <Routes>
-                            <Route path="/home" element={<Home />} />
-                            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                            <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-                            <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                            <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
-                            <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
-                            <Route path="/login" element={<Login />}  />
-                            <Route path="/register" element={<Register />} />
-                            <Route path="/" element={<Home />} />
-                            <Route path="*" element={ <PageNotFound /> } />
-                        </Routes>
-                    </BrowserRouter>
+                        <BrowserRouter>
+                            <Routes>
+                                <Route path="/home" element={<Home />} />
+                                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                                <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+                                <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                                <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+                                <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/users" element={<ProtectedRoute><RegistryUserManagement /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/agents" element ={<ProtectedRoute><RegistryAgentManagement /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/logs" element={<ProtectedRoute><RegistryAuditLog /></ProtectedRoute>} />
+                                <Route path="/registries/:registryId/settings" element={<ProtectedRoute><RegistrySettings /></ProtectedRoute>} />
+                                <Route path="/login" element={<Login />}  />
+                                <Route path="/register" element={<Register />} />
+                                <Route path="/" element={<Home />} />
+                                <Route path="*" element={ <PageNotFound /> } />
+                            </Routes>
+                        </BrowserRouter>
+                    </RegistryContext.Provider>
                 </ModalContext.Provider>
             </NavContext.Provider>
         </UserContext.Provider>
