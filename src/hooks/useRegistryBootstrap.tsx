@@ -72,7 +72,7 @@ const useRegistryBootstrap = (registryId: string | undefined): UseRegistryBootst
             const registryUserRes = await apiClient.get(`/api/v1/registries/${registryId}/permissions/me`);
             const registryUserData = await handleHttp(registryUserRes);
 
-            if (user == null) handleError("No user selected.")
+            if (user == null) handleError("No user selected.");
 
             setLocalUser({
                 id: user!.id,

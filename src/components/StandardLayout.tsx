@@ -48,7 +48,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
         if (navbarLevel === NavbarLevel.REGISTRY) {
             items.push({ text: "Return to Dashboard", icon: <Undo2 />, to: "/dashboard" });
             items.push({ text: "Registry Dashboard", icon: <Database />, to: `/registries/${registryId}` });
-            if (localUser?.permissions?.includes(RegistryUserPermissions.READ_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
+            if (localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
             if (localUser?.permissions?.includes(RegistryUserPermissions.READ_AGENTS)) items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
             if (localUser?.isOwner) items.push({ text: "Audit Log", icon: <FileClock />, to: `/registries/${registryId}/logs` });
             if (localUser?.isOwner) items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });

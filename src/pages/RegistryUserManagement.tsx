@@ -316,7 +316,7 @@ const RegistryUserManagement = () => {
     }, [ registryLoadingError, setBanner, navigate ])
 
     useEffect(() => {
-        if (registryLoading == RegistryLoadingState.LOADED && !localUser?.permissions?.includes(RegistryUserPermissions.READ_USERS)) {
+        if (registryLoading == RegistryLoadingState.LOADED && !localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS)) {
             navigate("/dashboard");
         }
     }, [ registryLoading, localUser, navigate ])
@@ -328,8 +328,7 @@ const RegistryUserManagement = () => {
                 <span className="text-3xl font-bold">Registry User Management</span>
             </div>}
 
-            {localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS) && <AddUsersPanel setRefreshKey={setRefreshKey} />}
-            {localUser?.permissions?.includes(RegistryUserPermissions.READ_USERS) && <CurrentUsersPanel refreshKey={refreshKey} setRefreshKey={setRefreshKey} />}
+            {localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS) && (<><AddUsersPanel setRefreshKey={setRefreshKey} /> <CurrentUsersPanel refreshKey={refreshKey} setRefreshKey={setRefreshKey} /></>)}
         </StandardLayout>
     </>
 }
