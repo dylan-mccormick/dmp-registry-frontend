@@ -1,30 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, type JSX } from "react";
 import StandardLayout from "../components/StandardLayout"
 import apiClient from "../apiClient";
 import { NavContext } from "../context/NavContext";
 import { useNavigate } from "react-router";
 import { NavbarLevel } from "../context/NavbarLevel";
-
-const UserCard = ({ id, username, email }: { id: number; username: string; email: string }) => {
-    const navigate = useNavigate();
-
-    return <div className="p-4 border rounded mb-4" >
-        {/* Left */}
-        <div className="flex items-center gap-4" >
-            <div className="flex flex-col min-w-0" >
-                <h2 className="text-xl wrap-break-word">{id} | <span className="font-bold">{username}</span></h2>
-                <p className="wrap-break-word">{email}</p>
-            </div>
-
-            {/* Right */}
-            <div className="flex items-center gap-4 ml-auto" >
-                <button className="button button-secondary" onClick={() => navigate(`/user/${id}/edit`)}>Edit</button>
-            </div>
-        </div>
-    </div>
-}
+import HTMLTable from "../components/HTMLTable";
 
 const Users = () => {
+
+    const navigate = useNavigate();
 
     const [ loading, setLoading ] = useState(false);
     const [ users, setUsers ] = useState<{ id: number; username: string; email: string }[]>([]);
@@ -64,9 +48,20 @@ const Users = () => {
                 <h1 className="text-3xl font-bold mb-6" >Users Directory</h1>
 
                 {loading && <p>Loading users...</p>}
-                <div className="flex flex-col w-full">
+
+                <HTMLTable<{ id: number; username: string; email: string, actions: JSX.Element }>
+                    columns={[
+                        { text: "ID", dataKey: "id" },
+                        { text: "Username", dataKey: "username" },
+                        { text: "Email", dataKey: "email" },
+                        { text: "Actions", dataKey: "actions", queryable: false }
+                    ]}
+                    data={users.map(u => ({ ...u, actions: <button className="button button-secondary" onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
+                />
+
+                {/* <div className="flex flex-col w-full">
                     {users.map(user => <UserCard key={user.id} id={user.id} username={user.username} email={user.email} />)}
-                </div>
+                </div> */}
             </div>
         </div>
     </StandardLayout>

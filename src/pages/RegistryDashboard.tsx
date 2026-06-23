@@ -5,6 +5,10 @@ import { RegistryContext } from "../context/RegistryContext";
 import { useNavigate, useParams } from "react-router";
 import { NavContext } from "../context/NavContext";
 import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
+import FilesystemController from "../components/registryControllers/FilesystemController";
+import MongoDBController from "../components/registryControllers/MongoDBController";
+import SQLiteController from "../components/registryControllers/SQLiteController";
+import KeyValueController from "../components/registryControllers/KeyValueController";
 
 const RegistryDashboard = () => {
     const { registryId } = useParams();
@@ -40,6 +44,10 @@ const RegistryDashboard = () => {
                     <div className="mt-4">
                         {(() => {
                             switch (registry?.type) {
+                                case "files": return <FilesystemController />;
+                                case "mongodb": return <MongoDBController />;
+                                case "sqlite": return <SQLiteController />;
+                                case "keyvalue": return <KeyValueController />;
                                 default: return <div className="border-red-500 bg-red-200 border br rounded p-4 text-red-900" >Sorry, the controller for this registry type has not yet been implemented.</div>
                             }
                         })()}

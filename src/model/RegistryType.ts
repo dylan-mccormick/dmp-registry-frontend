@@ -1,6 +1,8 @@
 export const RegistryType = {
     Files: "files",
-    MongoDB: "mongodb"
+    MongoDB: "mongodb",
+    SQLite: "sqlite",
+    KeyValue: "keyvalue"
 } as const;
 
 export const coerceRegistryTypeFromString = (text: string): RegistryType => {

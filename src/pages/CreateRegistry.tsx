@@ -62,6 +62,8 @@ const CreateRegistry = () => {
                                 <option value="">Select a type</option>
                                 <option value="files">Filesystem</option>
                                 <option value="mongodb">MongoDB</option>
+                                <option value="sqlite">Relational / SQLite</option>
+                                <option value="keyvalue">Key-Value Store</option>
                             </select>
                             <span className="text-sm text-red-500" >
                                 Warning: This option is irreversible. Make sure to choose the correct registry type, as it cannot be changed later.
