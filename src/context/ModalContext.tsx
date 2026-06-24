@@ -5,6 +5,7 @@ export interface ModalConfig {
     message?: string;
     type: 'alert' | 'confirm' | 'input' | 'password' | 'buttonless';
     placeholder?: string;
+    monoContent?: string;
     onConfirm?: (value?: string) => void;
     onCancel?: () => void;
 }

@@ -48,9 +48,9 @@ const CreateRegistry = () => {
     return <>
         <StandardLayout title="Create Registry" navbarLevel={NavbarLevel.TOP} >
             <div className="p-8" >
-                <h1 className="text-3xl font-bold mb-6" >Create New Registry</h1>
+                <h1 className="text-3xl font-bold" >Create New Registry</h1>
 
-                <div className="flex-1 p-4 overflow-y-auto" >
+                <div className="border border-gray-300 rounded w-1/2 mx-auto pb-16 mt-16 flex-1 p-4 overflow-y-auto" >
                     <form className="mt-4 max-w-sm mx-auto" onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block mb-2" htmlFor="name">Name/Identifier</label>
