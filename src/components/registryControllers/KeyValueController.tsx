@@ -1,24 +1,21 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import HTMLTable from "../HTMLTable";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { ModalContext } from "../../context/ModalContext";
 import { NavContext } from "../../context/NavContext";
 import useRegistryBootstrap from "../../hooks/useRegistryBootstrap";
-import { RegistryContext } from "../../context/RegistryContext";
 import apiClient from "../../apiClient";
 
 const KeyValueController = () => {
 
-    const navigate = useNavigate();
     const { registryId } = useParams();
 
     const { registryLoading } = useRegistryBootstrap(registryId);
 
-    const { localUser } = useContext(RegistryContext);
     const { showModal } = useContext(ModalContext);
     const { setBanner } = useContext(NavContext);
 
-    const [ loading, setLoading ] = useState(false);
+    const [ loading ] = useState(false);
     const [ data, setData ] = useState<{ id: number; key: string; type: string; value: string; actions: React.ReactNode }[]>([]);
 
     const dataRef = useRef(data);
@@ -33,7 +30,8 @@ const KeyValueController = () => {
             message: `Enter a new value for "${row["key"]}"`,
             type: "input",
             onConfirm: v => {
-
+                // dummy
+                console.log(v);
             }
         })
     };
