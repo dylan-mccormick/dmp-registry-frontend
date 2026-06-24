@@ -11,6 +11,12 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
                 <h2 className="text-lg font-bold mb-2">{config.title}</h2>
                 {config.message && <p className="text-gray-600 mb-4">{config.message}</p>}
 
+                {config.monoContent && (
+                    <div className="flex flex-col space-y-2 bg-gray-100 p-3 rounded font-mono text-sm break-all max-h-40 overflow-y-auto">
+                        <span>{config.monoContent}</span>
+                    </div>
+                )}
+
                 {(config.type === 'input' || config.type === 'password') && (
                     <input
                         autoFocus

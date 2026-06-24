@@ -39,7 +39,8 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
             items.push({ text: "Dashboard", to: "/dashboard", icon: <Gauge /> });
 
             if (user?.permissions.includes("MANAGE_USERS")) {
-                items.push({ text: "User Management", to: "/users", icon: <Users /> });
+                items.push({ text: "User Management", to: `/users`, icon: <Users /> });
+                items.push({ text: "Registry Management", to: `/admin/registries`, icon: <Database /> });
             }
 
             items.push({ text: "Account", to: "/profile", icon: <Settings /> });
