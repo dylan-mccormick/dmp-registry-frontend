@@ -61,7 +61,7 @@ const KeyValueController = () => {
                     message: `Enter a new value for "${key}"`,
                     type: "form",
                     formFields: [
-                        { name: "value", label: "Value", labelText: key, type: ( datatype == "number" ? "number" : datatype == "boolean" ? "checkbox" : datatype == "datetime" ? "datetime-local" : "text" ), required: true, stateValue: (datatype != "boolean" && undefined || undefined), defaultChecked: ( datatype == "boolean" && undefined == true )}
+                        { name: "value", label: "Value", labelText: key, type: ( datatype == "number" ? "number" : datatype == "boolean" ? "checkbox" : datatype == "datetime" ? "datetime-local" : "text" ), required: true}
                     ],
                     onConfirm: (newValue) => {
                         const parsedValue = JSON.parse(newValue || "{}");
@@ -158,6 +158,7 @@ const KeyValueController = () => {
             console.error(`Failed to load key-value pairs.`, err);
             setBanner({ level: "error", message: `Unable to load current data in registry.`});
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ refreshData ]);
 
     return <>
