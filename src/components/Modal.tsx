@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { type ModalConfig } from "../context/ModalContext";
+import { FormField } from "./CreationForm";
 
 const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }) => {
     const [inputValue, setInputValue] = useState('');
@@ -28,6 +29,12 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
                     />
                 )}
 
+                {config.type === 'form' && <>
+                    <form id="modal-form" onSubmit={e => e.preventDefault()} className="space-y-4">
+                        {config.formFields?.map((field) => <FormField key={field.name} {...field} />)}
+                    </form>
+                </>}
+
                 <div className="flex gap-2 justify-end">
                     {config.type !== 'buttonless' && <>
                         {config.type !== 'alert' && (
@@ -40,6 +47,15 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
 
                             <button className="button-primary" onClick={() => {
                                 onClose();
+                                if (config.type === 'form') {
+                                    const formData = new FormData(document.querySelector('#modal-form') as HTMLFormElement);
+                                    const formValues: Record<string, string> = {};
+                                    formData.forEach((value, key) => {
+                                        formValues[key] = value.toString();
+                                    });
+                                    config.onConfirm?.(JSON.stringify(formValues));
+                                    return;
+                                }
                                 config.onConfirm?.(inputValue || undefined);
                                 setInputValue('');
                             }}>

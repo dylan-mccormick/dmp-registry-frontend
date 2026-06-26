@@ -6,6 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import apiClient from "../apiClient";
 import { ModalContext } from "../context/ModalContext";
 import { NavContext } from "../context/NavContext";
+import CreationForm, { FormField } from "../components/CreationForm";
 
 const EditRegistryAgent = () => {
 
@@ -128,7 +129,6 @@ const EditRegistryAgent = () => {
                 }
 
                 const { roles } = await res.json();
-                console.log(roles);
                 setHasWritePermission(roles.includes("WRITE_REGISTRY"));
                 setHasReadPermission(roles.includes("READ_REGISTRY"));
             }).catch(err => {
@@ -141,37 +141,18 @@ const EditRegistryAgent = () => {
         }).finally(() => setLoading(false));
     }, [ agentId, registryId, setBanner ]);
 
+    const formFields: FormField[] = [
+        { name: "agentName", label: "Agent Name", type: "text", placeholder: "Agent Name", required: true, stateValue: agentName, setStateValue: setAgentName },
+        { name: "readRegistry", label: "Permissions", labelText: "Read Registry", type: "checkbox", stateValue: hasReadPermission, setStateValue: setHasReadPermission },
+        { name: "writeRegistry", labelText: "Write Registry", type: "checkbox", stateValue: hasWritePermission, setStateValue: setHasWritePermission }
+    ];
+
     return <>
         <StandardLayout title="Edit Registry Agent" navbarLevel={NavbarLevel.REGISTRY} >
             <div className="p-8">
-                <div className="flex flex-row justify-between items-center mb-6" >
-                    <span className="text-3xl font-bold">Edit Registry Agent</span>
-                </div>
-
-                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> ||
-                    <div className="border border-gray-300 rounded mt-16 p-8 w-1/2 items-center justify-center mx-auto">
-                        <form onSubmit={handleSubmit} className="flex flex-col w-full">
-                            <label htmlFor="agentName" className="block mb-2 font-semibold">Agent Name</label>
-                            <input type="text" name="agentName" placeholder="Agent Name" className="w-full px-3 py-2 border rounded mb-4 disabled:bg-gray-100" required value={agentName} onChange={e => setAgentName(e.target.value)} disabled={loading} />
-                            <label htmlFor="permissions" className="block mb-2 font-semibold">Permissions</label>
-                            <div className="flex flex-col m-4">
-                                <div className="flex flex-row gap-4">
-                                    <input type="checkbox" name="readRegistry" id="readRegistry" className="mb-4" checked={hasReadPermission} onChange={e => setHasReadPermission(e.target.checked)} disabled={loading} />
-                                    <label htmlFor="readRegistry" className="mb-4">Read Registry</label>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-4">Allows the agent to perform read operations from data on the registry.</p>
-                                <div className="flex flex-row gap-4 items-center">
-                                    <input type="checkbox" name="writeRegistry" id="writeRegistry" className="mb-4" checked={hasWritePermission} onChange={e => setHasWritePermission(e.target.checked)} disabled={loading} />
-                                    <label htmlFor="writeRegistry" className="mb-4">Write Registry</label>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-4">Allows the agent to perform write operations on the registry.</p>
-                            </div>
-                            <button className="button button-primary" type="submit" disabled={updating || loading}>
-                                {updating ? "Updating..." : "Update Agent"}
-                            </button>
-                        </form>
-                    </div>
-                }
+                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> || <>
+                    <CreationForm title="Edit Registry Agent" onSubmit={handleSubmit} buttonText="Update Agent" buttonLoadingText="Updating..." loading={updating} fields={formFields} formDisabled={loading} />
+                </>}
             </div>
         </StandardLayout>
     </>
