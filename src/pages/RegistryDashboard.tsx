@@ -39,9 +39,7 @@ const RegistryDashboard = () => {
             <StandardLayout navbarLevel={NavbarLevel.REGISTRY}>
                 {registryLoading != RegistryLoadingState.LOADED && <div className="text-center mt-8">Loading registry details...</div> ||
                 <div className="p-8">
-                    <span className="text-3xl font-bold mb-16">{registry?.name}</span>
-
-                    <div className="mt-4">
+                    <div>
                         {(() => {
                             switch (registry?.type) {
                                 case "files": return <FilesystemController />;

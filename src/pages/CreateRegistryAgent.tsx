@@ -6,6 +6,7 @@ import { useContext, useState } from "react";
 import apiClient from "../apiClient";
 import { ModalContext } from "../context/ModalContext";
 import { NavContext } from "../context/NavContext";
+import CreationForm, { FormField } from "../components/CreationForm";
 
 const CreateRegistryAgent = () => {
 
@@ -90,38 +91,27 @@ const CreateRegistryAgent = () => {
         }).finally(() => setLoading(false));
     };
 
+    const formFields: FormField[] = [
+        { name: "agentName", label: "Agent Name", type: "text", placeholder: "Agent Name", required: true },
+        { name: "readRegistry", label: "Permissions", labelText: "Read Registry", type: "checkbox", defaultChecked: true },
+        { name: "writeRegistry", labelText: "Write Registry", type: "checkbox" }
+    ];
+
     return <>
         <StandardLayout title="Create Registry Agent" navbarLevel={NavbarLevel.REGISTRY} >
             <div className="p-8">
-                <div className="flex flex-row justify-between items-center mb-6" >
-                    <span className="text-3xl font-bold">Create Registry Agent</span>
-                </div>
 
-                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> ||
-                    <div className="border border-gray-300 rounded mt-16 p-8 w-1/2 items-center justify-center mx-auto">
-                        <form onSubmit={handleSubmit} className="flex flex-col w-full">
-                            <label htmlFor="agentName" className="block mb-2 font-semibold">Agent Name</label>
-                            <input type="text" name="agentName" placeholder="Agent Name" className="w-full px-3 py-2 border rounded mb-4" required />
-                            <label htmlFor="permissions" className="block mb-2 font-semibold">Permissions</label>
-                            <div className="flex flex-col m-4">
-                                <div className="flex flex-row gap-4">
-                                    <input type="checkbox" name="readRegistry" id="readRegistry" className="mb-4" defaultChecked />
-                                    <label htmlFor="readRegistry" className="mb-4">Read Registry</label>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-4">Allows the agent to perform read operations from data on the registry.</p>
-                                <div className="flex flex-row gap-4 items-center">
-                                    <input type="checkbox" name="writeRegistry" id="writeRegistry" className="mb-4" />
-                                    <label htmlFor="writeRegistry" className="mb-4">Write Registry</label>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-4">Allows the agent to perform write operations on the registry.</p>
-                            </div>
-                            <p className="text-sm text-gray-500 mb-4">Note: The agent key will be generated after creation and will only be shown once. Please save it securely.</p>
-                            <button className="button button-primary" type="submit" disabled={loading}>
-                                {loading ? "Creating..." : "Create Agent"}
-                            </button>
-                        </form>
-                    </div>
-                }
+                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> || <>
+                    <CreationForm
+                        title="Create Registry Agent"
+                        onSubmit={handleSubmit}
+                        loading={loading}
+                        fields={formFields}
+                        buttonText="Create Agent"
+                        buttonLoadingText="Creating..."
+                        disclaimer="Note: The agent key will be generated after creation and will only be shown once. Please save it securely."
+                    />
+                </>}
             </div>
         </StandardLayout>
     </>

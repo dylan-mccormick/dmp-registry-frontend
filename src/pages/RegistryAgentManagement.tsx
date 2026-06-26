@@ -9,6 +9,7 @@ import { RegistryContext } from "../context/RegistryContext";
 import { RegistryUserPermissions } from "../model/RegistryUser";
 import apiClient from "../apiClient";
 import { ModalContext } from "../context/ModalContext";
+import PageHeader from "../components/PageHeader";
 
 interface AgentSchema {
     id: number;
@@ -153,10 +154,7 @@ const RegistryAgentManagement = () => {
     return <>
         <StandardLayout title="Agent Management" navbarLevel={NavbarLevel.REGISTRY} >
             <div className="p-8">
-                <div className="flex flex-row justify-between items-center mb-6" >
-                    <span className="text-3xl font-bold">Registry Agent Management</span>
-                    { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS) && <button className="button button-primary" onClick={() => navigate(`/registries/${registryId}/agents/new`)}>Create New Agent</button>}
-                </div>
+                <PageHeader title="Registry Agent Management" buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS) ? "Create New Agent" : undefined} buttonAction={() => navigate(`/registries/${registryId}/agents/new`)} />
 
                 { loading && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Loading agents..."}</p> || (agents.length === 0 && <p className="text-center">No agents found.</p> ||
                     <div className="mt-4 mb-8" >

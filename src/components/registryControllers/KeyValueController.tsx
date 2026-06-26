@@ -5,6 +5,9 @@ import { ModalContext } from "../../context/ModalContext";
 import { NavContext } from "../../context/NavContext";
 import useRegistryBootstrap from "../../hooks/useRegistryBootstrap";
 import apiClient from "../../apiClient";
+import PageHeader from "../PageHeader";
+import { RegistryContext } from "../../context/RegistryContext";
+import { RegistryUserPermissions } from "../../model/RegistryUser";
 
 const KeyValueController = () => {
 
@@ -14,12 +17,72 @@ const KeyValueController = () => {
 
     const { showModal } = useContext(ModalContext);
     const { setBanner } = useContext(NavContext);
+    const { registry, localUser } = useContext(RegistryContext);
 
     const [ loading ] = useState(false);
-    const [ data, setData ] = useState<{ id: number; key: string; type: string; value: string; actions: React.ReactNode }[]>([]);
+    const [ refreshData, setRefreshData ] = useState(0);
+    const [ data, setData ] = useState<{ id: number; key: string; type: string; value: string | number | boolean | Date; actions: React.ReactNode }[]>([]);
 
     const dataRef = useRef(data);
     useEffect(() => { dataRef.current = data; }, [data]);
+
+    const handleCreate = () => {
+        showModal({
+            title: "Create new Key",
+            message: `Please fill out the form to create a new key.`,
+            type: "form",
+            formFields: [
+                { name: "key", label: "Key", type: "text", required: true, minLength: 1, maxLength: 64, placeholder: "Key (1-64 characters, unique)" },
+                { name: "datatype", label: "Data Type", type: "select", required: true, options: [ { label: "String/Text", value: "string" }, { label: "Number", value: "number" }, { label: "Boolean", value: "boolean" }, { label: "Date + Time", value: "datetime" } ] }
+            ],
+            onConfirm: (results) => {
+                const parsedResults = JSON.parse(results || "{}");
+                const key = parsedResults["key"];
+                const datatype = parsedResults["datatype"];
+
+                // verify key is valid
+                if (!key || key.length < 1 || key.length > 64) {
+                    setBanner({ message: "Key must be between 1 and 64 characters.", level: "error" });
+                    return;
+                }
+
+                if (!(/^[a-zA-Z0-9_]+$/.test(key))) {
+                    setBanner({ message: "Key must only contain alphanumeric characters and underscores.", level: "error" });
+                    return;
+                }
+
+                if (dataRef.current.find(d => d.key == key)) {
+                    setBanner({ message: `Key "${key}" already exists. Please choose a different key.`, level: "error" });
+                    return;
+                }
+
+                showModal({
+                    title: "Edit Value",
+                    message: `Enter a new value for "${key}"`,
+                    type: "form",
+                    formFields: [
+                        { name: "value", label: "Value", labelText: key, type: ( datatype == "number" ? "number" : datatype == "boolean" ? "checkbox" : datatype == "datetime" ? "datetime-local" : "text" ), required: true, stateValue: (datatype != "boolean" && undefined || undefined), defaultChecked: ( datatype == "boolean" && undefined == true )}
+                    ],
+                    onConfirm: (newValue) => {
+                        const parsedValue = JSON.parse(newValue || "{}");
+                        const postedValue = datatype == "boolean" ? (parsedValue["value"] == "on") : parsedValue["value"];
+
+                        apiClient.put(`/r/${registryId}/api/v1/data/${key}`, { type: datatype, value: postedValue }).then(async res => {
+                            if (!res.ok) {
+                                throw new Error(`HTTP request failed with status ${res.status}: ${await res.text()}`);
+                            }
+                            setBanner({ message: `Successfully created key-value pair "${key}".`, level: "success" });
+                            // manually refresh the data, we don't know what the next ID will be
+                            setRefreshData(refreshData + 1);
+                        }).catch(err => {
+                            console.error(`Failed to create key-value pair "${key}".`, err);
+                            setBanner({ message: `Failed to create key-value pair "${key}".`, level: "error" });
+                        });
+                    }
+                })
+            }
+        })
+    };
 
     const handleEdit = (id: number) => {
         const row = dataRef.current.find(r => r.id == id);
@@ -28,10 +91,25 @@ const KeyValueController = () => {
         showModal({
             title: "Edit Value",
             message: `Enter a new value for "${row["key"]}"`,
-            type: "input",
-            onConfirm: v => {
-                // dummy
-                console.log(v);
+            type: "form",
+            formFields: [
+                { name: "value", label: "Value", labelText: row["key"], type: ( row["type"] == "number" ? "number" : row["type"] == "boolean" ? "checkbox" : row["type"] == "datetime" ? "datetime-local" : "text" ), required: true, stateValue: (row["type"] != "boolean" && row["value"] || undefined), defaultChecked: ( row["type"] == "boolean" && row["value"] == true )}
+            ],
+            onConfirm: (newValue) => {
+                const parsedValue = JSON.parse(newValue || "{}");
+                const postedValue = row["type"] == "boolean" ? (parsedValue["value"] == "on") : parsedValue["value"];
+
+                apiClient.put(`/r/${registryId}/api/v1/data/${row["key"]}`, { value: postedValue }).then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP request failed with status ${res.status}: ${await res.text()}`);
+                    }
+
+                    setBanner({ message: `Successfully updated value for "${row["key"]}".`, level: "success" });
+                    setData(dataRef.current.map(d => d.id == row.id ? { ...d, value: postedValue } : d));
+                }).catch(err => {
+                    console.error(`Failed to update value for "${row["key"]}".`, err);
+                    setBanner({ message: `Failed to update value for "${row["key"]}".`, level: "error" });
+                });
             }
         })
     };
@@ -45,7 +123,17 @@ const KeyValueController = () => {
             message: `Are you sure you would like to delete "${row["key"]}"?`,
             type: "confirm",
             onConfirm: () => {
+                apiClient.delete(`/r/${registryId}/api/v1/data/${row["key"]}`).then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP request failed with status ${res.status}: ${await res.text()}`);
+                    }
 
+                    setBanner({ message: `Successfully deleted "${row["key"]}".`, level: "success" });
+                    setData(dataRef.current.filter(d => d.id != row.id));
+                }).catch(err => {
+                    console.error(`Failed to delete "${row["key"]}".`, err);
+                    setBanner({ message: `Failed to delete "${row["key"]}".`, level: "error" });
+                });
             }
         })
     };
@@ -70,11 +158,12 @@ const KeyValueController = () => {
             console.error(`Failed to load key-value pairs.`, err);
             setBanner({ level: "error", message: `Unable to load current data in registry.`});
         });
-    }, [ ]);
+    }, [ refreshData ]);
 
     return <>
+        <PageHeader title={registry?.name || "Key-Value Registry"} buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) ? "Create Key-Value Pair" : undefined} buttonAction={handleCreate} />
         { loading && <p className="text-center">{registryLoading ? "Loading registry..." : "Loading key-value pairs..."}</p> || data.length === 0 && <p className="text-center">No key-value pairs found.</p> }
-        { !loading && data.length > 0 && <HTMLTable<{ id: number; key: string; type: string; value: string; actions: React.ReactNode }> columns={columns} data={data} /> }
+        { !loading && data.length > 0 && <HTMLTable<{ id: number; key: string; type: string; value: string | number | boolean | Date; actions: React.ReactNode }> columns={columns} data={data} /> }
     </>;
 
 }

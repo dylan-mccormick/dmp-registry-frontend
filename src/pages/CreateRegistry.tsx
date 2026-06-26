@@ -4,6 +4,7 @@ import { NavbarLevel } from "../context/NavbarLevel";
 import { NavContext } from "../context/NavContext";
 import apiClient from "../apiClient";
 import { useNavigate } from "react-router";
+import CreationForm, { FormField } from "../components/CreationForm";
 
 const CreateRegistry = () => {
 
@@ -45,36 +46,21 @@ const CreateRegistry = () => {
         }).finally(() => setLoading(false));
     };
 
+    const fields: FormField[] = [
+        { name: "name", label: "Name/Identifier", type: "text", required: true },
+        { name: "type", label: "Registry Type", type: "select", options: [
+            { value: "", label: "Select a type" },
+            { value: "files", label: "Filesystem" },
+            { value: "mongodb", label: "MongoDB" },
+            { value: "sqlite", label: "Relational / SQLite" },
+            { value: "keyvalue", label: "Key-Value Store" }
+        ], required: true, warning: "Warning: This option is irreversible. Make sure to choose the correct registry type, as it cannot be changed later." }
+    ];
+
     return <>
         <StandardLayout title="Create Registry" navbarLevel={NavbarLevel.TOP} >
             <div className="p-8" >
-                <h1 className="text-3xl font-bold" >Create New Registry</h1>
-
-                <div className="border border-gray-300 rounded w-1/2 mx-auto pb-16 mt-16 flex-1 p-4 overflow-y-auto" >
-                    <form className="mt-4 max-w-sm mx-auto" onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label className="block mb-2" htmlFor="name">Name/Identifier</label>
-                            <input className="w-full px-3 py-2 border rounded" type="text" id="name" name="name" required />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block mb-2" htmlFor="type">Registry Type</label>
-                            <select className="w-full px-3 py-2 border rounded" id="type" name="type" required>
-                                <option value="">Select a type</option>
-                                <option value="files">Filesystem</option>
-                                <option value="mongodb">MongoDB</option>
-                                <option value="sqlite">Relational / SQLite</option>
-                                <option value="keyvalue">Key-Value Store</option>
-                            </select>
-                            <span className="text-sm text-red-500" >
-                                Warning: This option is irreversible. Make sure to choose the correct registry type, as it cannot be changed later.
-                            </span>
-                        </div>
-
-                        <button className="button button-primary w-full" type="submit" disabled={loading}>
-                            {loading ? "Creating..." : "Create Registry"}
-                        </button>
-                    </form>
-                </div>
+                <CreationForm title="Create New Registry" buttonText="Create Registry" buttonLoadingText="Creating..." fields={fields} onSubmit={handleSubmit} loading={loading} />
             </div>
         </StandardLayout>
     </>
