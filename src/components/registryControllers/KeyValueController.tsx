@@ -33,7 +33,7 @@ const KeyValueController = () => {
             type: "form",
             formFields: [
                 { name: "key", label: "Key", type: "text", required: true, minLength: 1, maxLength: 64, placeholder: "Key (1-64 characters, unique)" },
-                { name: "datatype", label: "Data Type", type: "select", required: true, options: [ { label: "String/Text", value: "string" }, { label: "Number", value: "number" }, { label: "Boolean", value: "boolean" }, { label: "Date + Time", value: "datetime" } ] }
+                { name: "datatype", label: "Data Type", type: "select", required: true, options: [ { label: "String/Text", value: "string" }, { label: "Number", value: "number" }, { label: "Boolean", value: "boolean" }, { label: "Date", value: "date" }, { label: "Time", value: "time" }, { label: "Date + Time", value: "datetime" } ] }
             ],
             onConfirm: (results) => {
                 const parsedResults = JSON.parse(results || "{}");
@@ -61,7 +61,7 @@ const KeyValueController = () => {
                     message: `Enter a new value for "${key}"`,
                     type: "form",
                     formFields: [
-                        { name: "value", label: "Value", labelText: key, type: ( datatype == "number" ? "number" : datatype == "boolean" ? "checkbox" : datatype == "datetime" ? "datetime-local" : "text" ), required: true}
+                        { name: "value", label: "Value", labelText: key, type: ( datatype == "number" ? "number" : datatype == "boolean" ? "checkbox" : datatype == "date" ? "date" : datatype == "time" ? "time" : datatype == "datetime" ? "datetime-local" : "text" ), required: true}
                     ],
                     onConfirm: (newValue) => {
                         const parsedValue = JSON.parse(newValue || "{}");
@@ -93,7 +93,7 @@ const KeyValueController = () => {
             message: `Enter a new value for "${row["key"]}"`,
             type: "form",
             formFields: [
-                { name: "value", label: "Value", labelText: row["key"], type: ( row["type"] == "number" ? "number" : row["type"] == "boolean" ? "checkbox" : row["type"] == "datetime" ? "datetime-local" : "text" ), required: true, stateValue: (row["type"] != "boolean" && row["value"] || undefined), defaultChecked: ( row["type"] == "boolean" && row["value"] == true )}
+                { name: "value", label: "Value", labelText: row["key"], type: ( row["type"] == "number" ? "number" : row["type"] == "boolean" ? "checkbox" : row["type"] == "date" ? "date" : row["type"] == "time" ? "time" : row["type"] == "datetime" ? "datetime-local" : "text" ), required: true, stateValue: (row["type"] != "boolean" && row["value"] || undefined), defaultChecked: ( row["type"] == "boolean" && row["value"] == true )}
             ],
             onConfirm: (newValue) => {
                 const parsedValue = JSON.parse(newValue || "{}");

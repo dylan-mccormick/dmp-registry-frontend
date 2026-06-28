@@ -4,7 +4,7 @@ export interface FormField {
     name: string;
     label?: string;
     labelText?: string;
-    type: "text" | "password" | "number" | "email" | "textarea" | "select" | "checkbox" | "radio" | "date" | "datetime" | "datetime-local";
+    type: "text" | "password" | "number" | "email" | "textarea" | "select" | "checkbox" | "radio" | "date" | "datetime" | "time" | "datetime-local";
     maxLength?: number;
     minLength?: number;
     options?: { value: string; label: string }[];
