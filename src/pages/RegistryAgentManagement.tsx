@@ -123,8 +123,8 @@ const RegistryAgentManagement = () => {
     const [ loading, setLoading ] = useState(true);
     const [ agents, setAgents ] = useState<AgentSchema[]>([]);
 
-    const columns: { text: string; dataKey: keyof AgentSchema; queryable?: boolean }[] = [
-        { text: "ID", dataKey: "id", queryable: false },
+    const columns: { text: string; dataKey: keyof AgentSchema; queryable?: boolean; fixedPixelSize?: number }[] = [
+        { text: "ID", dataKey: "id", queryable: false, fixedPixelSize: 150 },
         { text: "Name", dataKey: "name" },
         { text: "Created At", dataKey: "createdAt" },
         { text: "Created By", dataKey: "createdBy" },

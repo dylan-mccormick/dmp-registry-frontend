@@ -19,7 +19,7 @@
 }
 
 @utility button-secondary {
-    @apply enabled:hover:text-primary hover:cursor-pointer disabled:opacity-50 enabled:active:text-blue-600 py-[2px] border-2 px-[6px] rounded border-primary disabled:hover:cursor-not-allowed;
+    @apply enabled:hover:text-primary hover:cursor-pointer disabled:opacity-50 enabled:active:text-blue-600 py-0.5 border-2 px-1.5 rounded border-primary disabled:hover:cursor-not-allowed;
 }
 
 @utility button-primary {

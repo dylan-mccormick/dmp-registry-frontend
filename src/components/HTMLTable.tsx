@@ -2,7 +2,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, Search } from "
 import { isValidElement, useCallback, useEffect, useState, type JSX } from "react";
 
 interface HTMLTableProps<T> {
-    columns: { text: string, dataKey: keyof T, queryable?: boolean }[];
+    columns: { text: string, dataKey: keyof T, queryable?: boolean, fixedPixelSize?: number }[];
     data: T[];
 }
 
@@ -164,7 +164,12 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
 
     return <div className="overflow-auto" >
 
-        <table className="w-full border-collapse" >
+        <table className="w-full border-collapse table-fixed">
+            <colgroup>
+                {columns.map((col, index) => (
+                    <col key={index} style={col.fixedPixelSize ? { width: `${col.fixedPixelSize}px` } : undefined} />
+                ))}
+            </colgroup>
             <thead className="sticky top-0 z-10">
                 <tr>
                     {columns.map((col, index) => (
