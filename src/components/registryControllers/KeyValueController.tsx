@@ -138,12 +138,12 @@ const KeyValueController = () => {
         })
     };
 
-    const columns: { text: string; dataKey: keyof typeof data[0]; queryable?: boolean }[] = [
-        { text: "ID", dataKey: "id", queryable: false },
+    const columns: { text: string; dataKey: keyof typeof data[0]; queryable?: boolean, fixedPixelSize?: number }[] = [
+        { text: "ID", dataKey: "id", queryable: false, fixedPixelSize: 150 },
         { text: "Key", dataKey: "key" },
-        { text: "Type", dataKey: "type" },
+        { text: "Type", dataKey: "type", fixedPixelSize: 150 },
         { text: "Value", dataKey: "value" },
-        { text: "Actions", dataKey: "actions", queryable: false }
+        { text: "Actions", dataKey: "actions", queryable: false, fixedPixelSize: 160 }
     ];
 
     useEffect(() => {

@@ -51,10 +51,10 @@ const Users = () => {
 
                 <HTMLTable<{ id: number; username: string; email: string, actions: JSX.Element }>
                     columns={[
-                        { text: "ID", dataKey: "id" },
+                        { text: "ID", dataKey: "id", fixedPixelSize: 150 },
                         { text: "Username", dataKey: "username" },
                         { text: "Email", dataKey: "email" },
-                        { text: "Actions", dataKey: "actions", queryable: false }
+                        { text: "Actions", dataKey: "actions", queryable: false, fixedPixelSize: 200 }
                     ]}
                     data={users.map(u => ({ ...u, actions: <button className="button button-secondary" onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
                 />
