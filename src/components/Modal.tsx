@@ -1,10 +1,113 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 
 import { type ModalConfig } from "../context/ModalContext";
 import { FormField } from "./CreationForm";
+import { LoaderCircle } from "lucide-react";
+
+const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesChange }: { filesLimit?: number, sizeLimit?: number, acceptedFileExtensions?: string[], onFilesChange: Dispatch<SetStateAction<File[]>> }) => {
+    const [files, setFiles] = useState<File[]>([]);
+    const [dragging, setDragging] = useState(false);
+    const [errorText, setErrorText] = useState<string | null>(null);
+
+    const handleFiles = (incoming: FileList | null) => {
+        if (!incoming) return;
+        const arr = Array.from(incoming);
+
+        if (filesLimit && arr.length > filesLimit) {
+            setErrorText(`You can only upload up to ${filesLimit} file(s).`);
+            return;
+        }
+
+        if (sizeLimit && arr.some(file => file.size > sizeLimit)) {
+            setErrorText(`One or more files exceed the size limit of ${formatSize(sizeLimit)}.`);
+            return;
+        }
+
+        if (acceptedFileExtensions && arr.some(file => !acceptedFileExtensions.includes(file.name.split('.').pop() || ''))) {
+            setErrorText(`One or more files have an invalid file type. Accepted types: ${acceptedFileExtensions.join(', ')}`);
+            return;
+        }
+
+        setErrorText(null);
+
+        setFiles(arr);
+        onFilesChange(arr);
+    };
+
+    const formatSize = (bytes: number) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    return (
+        <div className="flex flex-col gap-3 py-3">
+            {/* Drop zone */}
+            <div
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    dragging ? 'border-primary bg-blue-50' : 'border-gray-300 hover:border-primary'
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    setDragging(false);
+                    handleFiles(e.dataTransfer.files);
+                }}
+                onClick={() => document.getElementById('file-upload-input')?.click()}
+            >
+                <p className="text-gray-500 text-sm">Drag and drop files here, or click to select</p>
+                <input
+                    id="file-upload-input"
+                    type="file"
+                    multiple={filesLimit !== 1}
+                    accept={acceptedFileExtensions?.map(ext => `.${ext}`).join(',')}
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                />
+            </div>
+
+            {/* Preview */}
+            {files.length > 0 && (
+                <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                    {files.map((file, i) => (
+                        <div key={i} className="flex justify-between items-center border border-gray-300 rounded px-3 py-2 text-sm">
+                            <span className="truncate mr-4">{file.name}</span>
+                            <span className="text-gray-400 shrink-0">{formatSize(file.size)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <span className="text-red-500">{errorText}</span>
+        </div>
+    );
+};
 
 const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }) => {
     const [inputValue, setInputValue] = useState('');
+    const [ files, setFiles ] = useState<File[]>([]);
+
+    const handleSubmit = () => {
+        onClose();
+        if (config.type === 'form') {
+            const formData = new FormData(document.querySelector('#modal-form') as HTMLFormElement);
+            const formValues: Record<string, string> = {};
+            formData.forEach((value, key) => {
+                formValues[key] = value.toString();
+            });
+            config.onConfirm?.(JSON.stringify(formValues));
+            return;
+        }
+        if (config.type === 'files') {
+            config.onConfirm?.(files);
+            return;
+        }
+        if (config.type !== 'buttonless') {
+            config.onConfirm?.(inputValue);
+            setInputValue('');
+        }
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -35,6 +138,19 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
                     </form>
                 </>}
 
+                {config.type == "files" && <>
+                    <FilesUpload
+                        filesLimit={config.fileUploadConfig?.filesLimit}
+                        acceptedFileExtensions={config.fileUploadConfig?.acceptedFileExtensions}
+                        sizeLimit={config.fileUploadConfig?.sizeLimit}
+                        onFilesChange={setFiles}
+                    />
+                </>}
+
+                {config.loadingSpinner && <div className="flex justify-center items-center my-4">
+                    <LoaderCircle className="text-primary w-12 h-12 animate-spin" />
+                </div>}
+
                 <div className="flex gap-2 justify-end">
                     {config.type !== 'buttonless' && <>
                         {config.type !== 'alert' && (
@@ -45,20 +161,7 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
                             }}>Cancel</button>
                         )}
 
-                            <button className="button-primary" onClick={() => {
-                                onClose();
-                                if (config.type === 'form') {
-                                    const formData = new FormData(document.querySelector('#modal-form') as HTMLFormElement);
-                                    const formValues: Record<string, string> = {};
-                                    formData.forEach((value, key) => {
-                                        formValues[key] = value.toString();
-                                    });
-                                    config.onConfirm?.(JSON.stringify(formValues));
-                                    return;
-                                }
-                                config.onConfirm?.(inputValue || undefined);
-                                setInputValue('');
-                            }}>
+                            <button className="button-primary" onClick={handleSubmit}>
                                 {config.type === 'alert' ? 'OK' : 'Confirm'}
                             </button>
                     </>}
