@@ -14,6 +14,11 @@ const apiClient = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
     }),
+    putMultipart: (path: string, formData: FormData) => fetch(`${BASE_URL}${path}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formData
+    }),
     patch: (path: string, body: unknown) => fetch(`${BASE_URL}${path}`, {
         method: 'PATCH',
         credentials: 'include',
