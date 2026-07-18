@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const LogoutComponent = (props: HeaderProps) => {
     const navigate = useNavigate();
-    const {  setResetUser } = useContext(UserContext);
+    const { setResetUser } = useContext(UserContext);
 
     const logoutUser = () => {
         apiClient.post("/api/v1/users/logout", {})

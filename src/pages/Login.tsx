@@ -1,19 +1,19 @@
 import { useContext, useState } from "react";
-import StandardLayout from "../components/StandardLayout";
-import { NavContext } from "../context/NavContext";
-import apiClient from "../apiClient";
 import { useNavigate } from "react-router";
+import apiClient from "../apiClient";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
 import { UserContext } from "../context/UserContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 const Login = () => {
 
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { setResetUser } = useContext(UserContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const [ username, setUsername ] = useState("");
     const [ password, setPassword ] = useState("");
-
-    const [ loading, setLoading ] = useState(false);
 
     const navigate = useNavigate();
 
@@ -30,8 +30,8 @@ const Login = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setBanner(null); // clear existing banners
+        addProcess("login_process");
+        setBanner(undefined); // clear existing banners
 
         apiClient.post("/api/v1/users/login", {
             username,
@@ -54,7 +54,7 @@ const Login = () => {
             console.error(err);
             handleError("Login failed. Please try again.");
         })
-        .finally(() => setLoading(false));
+        .finally(() => removeProcess("login_process"));
     }
 
     return <>
@@ -73,10 +73,10 @@ const Login = () => {
                         <label htmlFor="password" className="block text-left mb-2">Password</label>
                         <input type="password" id="password" name="password" className="w-full px-3 py-2 border rounded" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
-                    <button type="submit" className="button-primary w-full" disabled={loading}>
-                        {loading ? "Logging in..." : "Log In"}
+                    <button type="submit" className="button-primary w-full" disabled={processes.has("login_process")}>
+                        {processes.has("login_process") ? "Logging in..." : "Log In"}
                     </button>
-                    <button type="button" className="button-secondary mt-2 w-full" disabled={loading} onClick={() => navigate("/register")}>
+                    <button type="button" className="button-secondary mt-2 w-full" disabled={processes.has("login_process")} onClick={() => navigate("/register")}>
                         Don't have an account? Register
                     </button>
                     <button type="button" className="button-link mt-2 w-full" onClick={() => navigate("/forgot-password")}>

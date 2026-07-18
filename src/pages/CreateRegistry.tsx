@@ -1,18 +1,18 @@
-import { useContext, useState } from "react";
-import StandardLayout from "../components/StandardLayout";
-import { NavbarLevel } from "../context/NavbarLevel";
-import { NavContext } from "../context/NavContext";
-import apiClient from "../apiClient";
+import { useContext } from "react";
 import { useNavigate } from "react-router";
+import apiClient from "../apiClient";
 import CreationForm, { FormField } from "../components/CreationForm";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
+import { NavbarLevel } from "../context/NavbarLevel";
 
 const CreateRegistry = () => {
 
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const navigate = useNavigate();
-
-    const [ loading, setLoading ] = useState(false);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -26,7 +26,7 @@ const CreateRegistry = () => {
             return;
         }
 
-        setLoading(true);
+        addProcess("creating_registry");
 
         apiClient.post("/api/v1/registries/new", { name, type }).then(res => {
             if (!res.ok) {
@@ -43,7 +43,7 @@ const CreateRegistry = () => {
         }).catch(error => {
             console.error("Error creating registry:", error);
             setBanner({ message: "Failed to create registry. Please try again.", level: "error" });
-        }).finally(() => setLoading(false));
+        }).finally(() => removeProcess("creating_registry"));
     };
 
     const fields: FormField[] = [
@@ -60,7 +60,7 @@ const CreateRegistry = () => {
     return <>
         <StandardLayout title="Create Registry" navbarLevel={NavbarLevel.TOP} >
             <div className="p-8" >
-                <CreationForm title="Create New Registry" buttonText="Create Registry" buttonLoadingText="Creating..." fields={fields} onSubmit={handleSubmit} loading={loading} />
+                <CreationForm title="Create New Registry" buttonText="Create Registry" buttonLoadingText="Creating..." fields={fields} onSubmit={handleSubmit} loading={processes.has("creating_registry")} />
             </div>
         </StandardLayout>
     </>

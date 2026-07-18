@@ -1,19 +1,20 @@
-import { useContext, useState } from "react";
-import StandardLayout from "../components/StandardLayout"
-import { UserContext } from "../context/UserContext";
-import apiClient from "../apiClient";
-import { ModalContext } from "../context/ModalContext";
-import { NavContext } from "../context/NavContext";
+import { useContext } from "react";
 import { useNavigate } from "react-router";
+import apiClient from "../apiClient";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
+import { ModalContext } from "../context/ModalContext";
 import { NavbarLevel } from "../context/NavbarLevel";
+import { UserContext } from "../context/UserContext";
 
 const Account = () => {
 
     const { user, setUser } = useContext(UserContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { showModal, closeModal } = useContext(ModalContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
-    const [ loading, setLoading ] = useState(false);
     const navigate = useNavigate();
 
     const handleChangePassword = async () => {
@@ -61,7 +62,7 @@ const Account = () => {
                                         type: "alert",
                                         onConfirm: () => {
                                             // clear user and redirect
-                                            setUser(null);
+                                            setUser(undefined);
                                             navigate("/home");
                                             setBanner({ level: "success", message: "Password changed successfully." });
                                         }
@@ -119,22 +120,22 @@ const Account = () => {
                                         });
 
                                         try {
-                                            setLoading(true);
+                                            addProcess("deleting_account");
                                             const res = await apiClient.delete(`/api/v1/users/delete/me`, { password });
                                             if (!res.ok) {
                                                 const data = await res.json();
                                                 setBanner({ level: "error", message: data.message ?? "Failed to delete account." });
-                                                setLoading(false);
+                                                removeProcess("deleting_account");
                                                 closeModal();
                                                 return;
                                             }
                                             // clear user and redirect
-                                            setUser(null);
+                                            setUser(undefined);
                                             navigate("/home");
                                             setBanner({ level: "success", message: "Account deleted successfully." });
                                         } catch {
                                             setBanner({ level: "error", message: "An error occurred." });
-                                            setLoading(false);
+                                            removeProcess("deleting_account");
                                         } finally {
                                             closeModal();
                                         }
@@ -151,7 +152,7 @@ const Account = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        addProcess("updating_account");
 
         // get the new username and email from the form
         const formData = new FormData(e.target as HTMLFormElement);
@@ -161,14 +162,14 @@ const Account = () => {
         // test username for regex
         if (!username || username.length < 3 || !username.match(/^\w+$/)) {
             setBanner({ message: "Username must be at least 3 characters long and contain only letters, numbers, and underscores.", level: "error" });
-            setLoading(false);
+            removeProcess("updating_account");
             return;
         }
 
         // send the update request to the server
         const res = await apiClient.patch("/api/v1/users/update/me", { username, email });
         if (!res.ok) {
-            setLoading(false);
+            removeProcess("updating_account");
 
             // try to extract error message from response
             let errorMessage = "Failed to update account.";
@@ -183,12 +184,12 @@ const Account = () => {
             }
 
             setBanner({ message: errorMessage, level: "error" });
-            setLoading(false);
+            removeProcess("updating_account");
             return;
         }
 
         setBanner({ message: "Account updated successfully.", level: "success" });
-        setLoading(false);
+        removeProcess("updating_account");
     };
 
 
@@ -209,13 +210,15 @@ const Account = () => {
 
                         <div /> {/* empty cell */}<div /> {/* empty cell */}
                         <div /> {/* empty cell */}
-                        <button type="submit" className="button-primary" disabled={loading}>Save Changes</button>
+                        <button type="submit" className="button-primary" disabled={processes.has("updating_account")}>
+                            Save Changes
+                        </button>
                         <div /> {/* empty cell to push button into second column */}
-                        <button type="button" className="button-secondary" disabled={loading} onClick={handleChangePassword}>
+                        <button type="button" className="button-secondary" disabled={processes.has("changing_password")} onClick={handleChangePassword}>
                             Change Password
                         </button>
                         <div /> {/* empty cell */}
-                        <button type="button" className="button-secondary border-red-500" disabled={loading} onClick={handleDeleteAccount}>
+                        <button type="button" className="button-secondary border-red-500" disabled={processes.has("deleting_account")} onClick={handleDeleteAccount}>
                             Delete Account
                         </button>
                     </div>

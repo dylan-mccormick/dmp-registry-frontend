@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { createContext, type SetStateAction } from "react";
-import type { BannerContext } from "./BannerContext";
+import { createContext } from "react";
 
-export const NavContext = createContext({
+interface NavContextProps {
+    navOpen: boolean,
+    setNavOpen: (navOpen: boolean) => void;
+}
+
+export const NavContext = createContext<NavContextProps>({
     navOpen: false,
-    setNavOpen: (_: SetStateAction<boolean>) => { },
-    banner: null as BannerContext | null,
-    setBanner: (_: SetStateAction<BannerContext | null>) => { },
+    setNavOpen: ( ) => { }
 });

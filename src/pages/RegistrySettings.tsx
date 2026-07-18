@@ -1,12 +1,13 @@
-import { useContext, useEffect, useState } from "react";
-import StandardLayout from "../components/StandardLayout"
-import { NavbarLevel } from "../context/NavbarLevel"
+import { useContext, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import apiClient from "../apiClient";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
+import { ModalContext } from "../context/ModalContext";
+import { NavbarLevel } from "../context/NavbarLevel";
 import { RegistryContext } from "../context/RegistryContext";
 import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
-import { useNavigate, useParams } from "react-router-dom";
-import { NavContext } from "../context/NavContext";
-import { ModalContext } from "../context/ModalContext";
-import apiClient from "../apiClient";
 
 const RegistrySettings = () => {
 
@@ -17,9 +18,8 @@ const RegistrySettings = () => {
 
     const { registry, localUser } = useContext(RegistryContext);
     const { showModal, closeModal } = useContext(ModalContext);
-    const { setBanner } = useContext(NavContext);
-
-    const [ loading, setLoading ] = useState(false);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,7 +31,7 @@ const RegistrySettings = () => {
             return;
         }
 
-        setLoading(true);
+        addProcess("updating_registry");
         apiClient.put(`/api/v1/registries/${registryId}`, { name }).then(async res => {
             if (!res.ok) {
                 if (res.status === 409) {
@@ -48,7 +48,7 @@ const RegistrySettings = () => {
         }).catch(err => {
             console.error("Failed to update registry", err);
             setBanner({ level: "error", message: "Failed to update registry." });
-        }).finally(() => setLoading(false));
+        }).finally(() => removeProcess("updating_registry"));
     };
 
     const handleDelete = () => {
@@ -80,7 +80,7 @@ const RegistrySettings = () => {
                                     message: "THIS IS YOUR LAST CHANCE TO BACK OUT. THIS ACTION IS IRREVERSIBLE AND WILL DELETE ALL DATA IN THIS REGISTRY. UPON CLICKING CONFIRM, YOU WILL BE REDIRECTED TO THE DASHBOARD AND ALL DATA WILL BE LOST. ARE YOU ABSOLUTELY SURE YOU WANT TO PROCEED?",
                                     type: "confirm",
                                     onConfirm: async () => {
-                                        setLoading(true);
+                                        addProcess("deleting_registry");
                                         try {
                                             apiClient.delete(`/api/v1/registries/${registryId}`, { password }).then(async res => {
                                                 if (!res.ok) {
@@ -102,7 +102,7 @@ const RegistrySettings = () => {
                                             console.error("Failed to delete registry", err);
                                             setBanner({ level: "error", message: "Failed to delete registry." });
                                         } finally {
-                                            setLoading(false);
+                                            removeProcess("deleting_registry");
                                             closeModal();
                                         }
                                     }
@@ -149,9 +149,9 @@ const RegistrySettings = () => {
 
                         <div /> {/* empty cell */}<div /> {/* empty cell */}
                         <div /> {/* empty cell */}
-                        <button type="submit" className="button-primary" disabled={loading}>Save Changes</button>
+                        <button type="submit" className="button-primary" disabled={processes.has("updating_registry")}>Save Changes</button>
                         <div /> {/* empty cell */}
-                        <button type="button" className="button-secondary border-red-500" disabled={loading} onClick={handleDelete}>
+                        <button type="button" className="button-secondary border-red-500" disabled={processes.has("deleting_registry")} onClick={handleDelete}>
                             Delete Registry
                         </button>
                     </div>

@@ -1,14 +1,16 @@
 import { useContext, useState, type FormEvent } from "react";
-import StandardLayout from "../components/StandardLayout"
-import { NavContext } from "../context/NavContext";
-import apiClient from "../apiClient";
 import { useNavigate } from "react-router";
+import apiClient from "../apiClient";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
 import { UserContext } from "../context/UserContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 const Register = () => {
 
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { setResetUser } = useContext(UserContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const navigate = useNavigate();
 
@@ -16,8 +18,6 @@ const Register = () => {
     const [ email, setEmail ] = useState("");
     const [ password, setPassword ] = useState("");
     const [ confirmPassword, setConfirmPassword ] = useState("");
-
-    const [ loading, setLoading ] = useState(false);
 
     const handleSuccess = () => {
         // redirect to home
@@ -46,8 +46,8 @@ const Register = () => {
             return;
         }
 
-        setBanner(null);
-        setLoading(true);
+        setBanner(undefined);
+        addProcess("register_process");
 
         apiClient.post("/api/v1/users/register", {
             username,
@@ -74,7 +74,7 @@ const Register = () => {
             handleError("Registration failed. Please try again.");
         })
         .finally(() => {
-            setLoading(false);
+            removeProcess("register_process");
         });
     }
 
@@ -99,10 +99,10 @@ const Register = () => {
                     <label htmlFor="confirm-password" className="block text-left mb-2">Confirm Password</label>
                     <input type="password" id="confirm-password" name="confirm-password" maxLength={255} className="w-full px-3 py-2 border rounded" onChange={e => setConfirmPassword(e.target.value)} required />
                 </div>
-                <button type="submit" className="button-primary w-full" disabled={loading}>
-                    {loading ? "Registering..." : "Register"}
+                <button type="submit" className="button-primary w-full" disabled={processes.has("register_process")}>
+                    {processes.has("register_process") ? "Registering..." : "Register"}
                 </button>
-                <button type="button" className="button-secondary mt-2 w-full" onClick={() => navigate("/login")} disabled={loading}>Already have an account? Log In</button>
+                <button type="button" className="button-secondary mt-2 w-full" onClick={() => navigate("/login")} disabled={processes.has("register_process")}>Already have an account? Log In</button>
             </form>
         </main>
     </StandardLayout>

@@ -1,14 +1,14 @@
-import { useNavigate, useParams } from "react-router";
-import useRegistryBootstrap, { RegistryLoadingState } from "../../hooks/useRegistryBootstrap";
-import PageHeader from "../PageHeader";
+import { ChevronRight, FileUp, Folder, FolderPlus } from "lucide-react";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { RegistryContext } from "../../context/RegistryContext";
-import { ChevronRight, FileUp, Folder, FolderPlus, LoaderCircle } from "lucide-react";
+import { useNavigate, useParams } from "react-router";
 import apiClient from "../../apiClient";
-import { NavContext } from "../../context/NavContext";
-import HTMLTable from "../HTMLTable";
+import { BannerContext } from "../../context/BannerContext";
 import { ModalContext } from "../../context/ModalContext";
+import { RegistryContext } from "../../context/RegistryContext";
+import useRegistryBootstrap, { RegistryLoadingState } from "../../hooks/useRegistryBootstrap";
 import { RegistryUserPermissions } from "../../model/RegistryUser";
+import HTMLTable from "../HTMLTable";
+import PageHeader from "../PageHeader";
 
 // File Hierarchy Information
 interface FSNode { name: string; type: "file" | "directory"; children?: FSNode[]; };
@@ -26,7 +26,7 @@ const HierarchyViewer = ({ node }: { node: FSNode }) => {
     const { localUser } = useContext(RegistryContext);
 
     // banner/modal
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { showModal, closeModal } = useContext(ModalContext);
 
     // path/node mgmt
@@ -194,7 +194,7 @@ const HierarchyViewer = ({ node }: { node: FSNode }) => {
             onConfirm: () => {
                 showModal({
                     title: "Deleting...",
-                    message: "Please wait. Deleting the requested resource...",
+                    loadingSpinner: true,
                     type: "buttonless"
                 });
                 apiClient.delete(`/r/${registryId}/api/v1/files${filePath}`).then(async res => {
@@ -306,7 +306,7 @@ const FilesystemController = () => {
     const navigate = useNavigate();
 
     // Banner
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
 
     // Local registry information
     const { registryId } = useParams();
@@ -340,7 +340,6 @@ const FilesystemController = () => {
     return <>
         <PageHeader title={registry?.name ?? "Filesystem Registry"} />
         <div className="flex items-center justify-center">
-            { (registryLoading != RegistryLoadingState.LOADED || dataLoading) && <LoaderCircle className="text-primary w-12 h-12 animate-spin" /> }
             { (registryLoading == RegistryLoadingState.LOADED && !dataLoading && registryData == null) && <span>There is no data to show.</span> }
             { (registryLoading == RegistryLoadingState.LOADED && !dataLoading && registryData != null) && <HierarchyViewer node={registryData} /> }
         </div>

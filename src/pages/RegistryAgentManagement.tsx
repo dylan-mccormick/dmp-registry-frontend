@@ -1,15 +1,16 @@
-import { useNavigate, useParams } from "react-router";
-import StandardLayout from "../components/StandardLayout"
-import { NavbarLevel } from "../context/NavbarLevel"
-import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
 import { useCallback, useContext, useEffect, useState, type JSX } from "react";
-import { NavContext } from "../context/NavContext";
-import HTMLTable from "../components/HTMLTable";
-import { RegistryContext } from "../context/RegistryContext";
-import { RegistryUserPermissions } from "../model/RegistryUser";
+import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
-import { ModalContext } from "../context/ModalContext";
+import HTMLTable from "../components/HTMLTable";
 import PageHeader from "../components/PageHeader";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { ModalContext } from "../context/ModalContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import { RegistryContext } from "../context/RegistryContext";
+import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
+import { RegistryUserPermissions } from "../model/RegistryUser";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 interface AgentSchema {
     id: number;
@@ -24,7 +25,7 @@ const AgentActions = ({ agent }: { agent: Omit<AgentSchema, "actions"> }) => {
     const { registryId } = useParams();
     const { reload } = useRegistryBootstrap(registryId);
     const { localUser } = useContext(RegistryContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { showModal, closeModal } = useContext(ModalContext);
 
     const handleEditRoles = useCallback(() => {
@@ -117,10 +118,10 @@ const RegistryAgentManagement = () => {
     const { registryId } = useParams();
 
     const { registryLoading } = useRegistryBootstrap(registryId);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { localUser } = useContext(RegistryContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
-    const [ loading, setLoading ] = useState(true);
     const [ agents, setAgents ] = useState<AgentSchema[]>([]);
 
     const columns: { text: string; dataKey: keyof AgentSchema; queryable?: boolean; fixedPixelSize?: number }[] = [
@@ -132,8 +133,7 @@ const RegistryAgentManagement = () => {
     ];
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (registryLoading !== RegistryLoadingState.LOADED) return setLoading(true);
+        if (registryLoading !== RegistryLoadingState.LOADED) return addProcess("loading_agents");
 
         // get a list of agents for the registry
         apiClient.get(`/api/v1/registries/${registryId}/agents`).then(async res => {
@@ -148,15 +148,15 @@ const RegistryAgentManagement = () => {
         }).catch(err => {
             console.error(`Failed to get a list of agents for the registry: `, err);
             setBanner({ level: "error", message: `Failed to load registry agents.`});
-        }).finally(() => setLoading(false));
-    }, [ registryId, registryLoading, setBanner ]);
+        }).finally(() => removeProcess("loading_agents"));
+    }, [addProcess, registryId, registryLoading, removeProcess, setBanner]);
 
     return <>
         <StandardLayout title="Agent Management" navbarLevel={NavbarLevel.REGISTRY} >
             <div className="p-8">
                 <PageHeader title="Registry Agent Management" buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS) ? "Create New Agent" : undefined} buttonAction={() => navigate(`/registries/${registryId}/agents/new`)} />
 
-                { loading && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Loading agents..."}</p> || (agents.length === 0 && <p className="text-center">No agents found.</p> ||
+                { processes.has("loading_agents") && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Loading agents..."}</p> || (agents.length === 0 && <p className="text-center">No agents found.</p> ||
                     <div className="mt-4 mb-8" >
                         <HTMLTable<AgentSchema> columns={columns} data={agents} />
                     </div>

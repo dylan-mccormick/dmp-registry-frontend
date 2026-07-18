@@ -56,10 +56,12 @@ export type ModalConfig =
 
 interface ModalContextInterface {
     showModal: (config: ModalConfig) => void;
+    modal: ModalConfig | undefined;
     closeModal: () => void;
 }
 
 export const ModalContext = createContext<ModalContextInterface>({
     showModal: () => {},
+    modal: undefined,
     closeModal: () => {}
 });

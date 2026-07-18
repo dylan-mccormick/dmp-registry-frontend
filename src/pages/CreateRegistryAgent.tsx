@@ -1,12 +1,13 @@
+import { useContext } from "react";
 import { useNavigate, useParams } from "react-router";
-import StandardLayout from "../components/StandardLayout"
-import { NavbarLevel } from "../context/NavbarLevel"
-import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
-import { useContext, useState } from "react";
 import apiClient from "../apiClient";
-import { ModalContext } from "../context/ModalContext";
-import { NavContext } from "../context/NavContext";
 import CreationForm, { FormField } from "../components/CreationForm";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
+import { ModalContext } from "../context/ModalContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
 
 const CreateRegistryAgent = () => {
 
@@ -16,13 +17,12 @@ const CreateRegistryAgent = () => {
     const { registryLoading } = useRegistryBootstrap(registryId);
 
     const { showModal } = useContext(ModalContext);
-    const { setBanner } = useContext(NavContext);
-
-    const [ loading, setLoading ] = useState(false);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
+        addProcess("creating_agent");
 
         const formData = new FormData(e.currentTarget);
         const agentName = formData.get("agentName") as string;
@@ -35,13 +35,13 @@ const CreateRegistryAgent = () => {
 
         if (agentName.trim().length === 0 || agentName.trim().length > 255) {
             setBanner({ message: "Agent name must be between 1 and 255 characters.", level: "error" });
-            setLoading(false);
+            removeProcess("creating_agent");
             return;
         }
 
         if (!(/^\w+$/.test(agentName))) {
             setBanner({ message: "Agent name must only contain alphanumeric characters and underscores.", level: "error" });
-            setLoading(false);
+            removeProcess("creating_agent");
             return;
         }
 
@@ -49,7 +49,7 @@ const CreateRegistryAgent = () => {
             if (!res.ok) {
                 if (res.status === 409) {
                     setBanner({ message: "An agent with that name already exists. Please choose a different name.", level: "error" });
-                    setLoading(false);
+                    removeProcess("creating_agent");
                     return;
                 }
 
@@ -88,7 +88,7 @@ const CreateRegistryAgent = () => {
         }).catch(err => {
             console.error("Failed to create registry agent:", err);
             setBanner({ message: "Failed to create registry agent. Please try again.", level: "error" });
-        }).finally(() => setLoading(false));
+        }).finally(() => removeProcess("creating_agent"));
     };
 
     const formFields: FormField[] = [
@@ -105,7 +105,7 @@ const CreateRegistryAgent = () => {
                     <CreationForm
                         title="Create Registry Agent"
                         onSubmit={handleSubmit}
-                        loading={loading}
+                        loading={processes.has("creating_agent")}
                         fields={formFields}
                         buttonText="Create Agent"
                         buttonLoadingText="Creating..."

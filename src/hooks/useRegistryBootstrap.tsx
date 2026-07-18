@@ -5,6 +5,7 @@ import { coerceRegistryUserPermissionFromString } from "../model/RegistryUser";
 import { UserContext } from "../context/UserContext";
 import apiClient from "../apiClient";
 import type { Registry } from "../model/Registry";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 type UseRegistryBootstrapResult = {
     registryLoading: RegistryLoadingState;
@@ -24,6 +25,7 @@ const useRegistryBootstrap = (registryId: string | undefined): UseRegistryBootst
     const [ registryLoading, setRegistryLoading ] = useState<RegistryLoadingState>(RegistryLoadingState.NOT_STARTED);
     const [ registryLoadingError, setRegistryLoadingError ] = useState<string | null>(null);
 
+    const { addProcess, removeProcess } = useContext(LoadingBannerContext);
     const { registry, setRegistry, setLocalUser } = useContext(RegistryContext);
     const { user } = useContext(UserContext);
 
@@ -36,15 +38,17 @@ const useRegistryBootstrap = (registryId: string | undefined): UseRegistryBootst
         return res.json();
     }
 
-    const handleError = async (reason: string, cause?: unknown) => {
+    const handleError = useCallback(async (reason: string, cause?: unknown) => {
         console.error(reason, cause);
         setRegistryLoadingError(reason);
         setRegistryLoading(RegistryLoadingState.LOADED);
-    }
+        removeProcess("loading_registry");
+    }, [removeProcess]);
 
     const reload = useCallback(async () => {
         setRegistryLoading(RegistryLoadingState.LOADING);
-        setRegistry(null);
+        addProcess("loading_registry");
+        setRegistry(undefined);
 
         try {
             const detailsRes = await apiClient.get(
@@ -88,21 +92,30 @@ const useRegistryBootstrap = (registryId: string | undefined): UseRegistryBootst
             handleError("Error gathering details about the registry.", err);
         } finally {
             setRegistryLoading(RegistryLoadingState.LOADED);
+            removeProcess("loading_registry");
+            removeProcess("loading_local_user");
         }
-    }, [ registryId, setLocalUser, setRegistry, user ]);
+    }, [addProcess, handleError, registryId, removeProcess, setLocalUser, setRegistry, user]);
 
     useEffect(() => {
         if (!registryId) return;
 
-        if (registryId == registry?.id.toString() && registryLoading != RegistryLoadingState.LOADED) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setRegistryLoading(RegistryLoadingState.LOADED);
+        const activeRegistryId = registry?.id.toString();
+
+        if (registryId == activeRegistryId) {
+            if (registryLoading != RegistryLoadingState.LOADED) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setRegistryLoading(RegistryLoadingState.LOADED);
+                removeProcess("loading_registry");
+            }
+
+            return;
         }
 
-        if (registryId != registry?.id.toString()) {
+        if (registryLoading != RegistryLoadingState.LOADING) {
             reload();
         }
-    }, [ registryId, registry, reload, registryLoading ])
+    }, [registryId, registry?.id, reload, registryLoading, removeProcess])
 
     return { registryLoading, registryLoadingError, reload }
 }

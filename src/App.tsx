@@ -1,125 +1,69 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
+import Modal from './components/Modal.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
 import './index.css';
+import Account from './pages/Account.tsx';
+import CreateRegistry from './pages/CreateRegistry.tsx';
+import CreateRegistryAgent from './pages/CreateRegistryAgent.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import EditRegistryAgent from './pages/EditRegistryAgentRoles.tsx';
+import EditUser from './pages/EditUser.tsx';
+import Home from './pages/Home.tsx';
 import Login from './pages/Login.tsx';
 import PageNotFound from './pages/PageNotFound.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import Home from './pages/Home.tsx';
-import { NavContext } from './context/NavContext.tsx';
-import { UserContext, UserPermission, type UserContextInterface } from './context/UserContext.tsx';
-import { useCallback, useEffect, useState } from 'react';
 import Register from './pages/Register.tsx';
-import Users from './pages/Users.tsx';
-import type { BannerContext } from './context/BannerContext.tsx';
-import ProtectedRoute from './components/ProtectedRoute.tsx';
-import apiClient from './apiClient.ts';
-import Account from './pages/Account.tsx';
-import EditUser from './pages/EditUser.tsx';
-import { ModalContext, type ModalConfig } from './context/ModalContext.tsx';
-import Modal from './components/Modal.tsx';
-import CreateRegistry from './pages/CreateRegistry.tsx';
-import RegistryDashboard from './pages/RegistryDashboard.tsx';
-import type { Registry } from './model/Registry.ts';
-import { RegistryContext } from './context/RegistryContext.tsx';
-import type { RegistryUser } from './model/RegistryUser.ts';
-import RegistryUserManagement from './pages/RegistryUserManagement.tsx';
 import RegistryAgentManagement from './pages/RegistryAgentManagement.tsx';
 import RegistryAuditLog from './pages/RegistryAuditLog.tsx';
+import RegistryDashboard from './pages/RegistryDashboard.tsx';
 import RegistrySettings from './pages/RegistrySettings.tsx';
-import CreateRegistryAgent from './pages/CreateRegistryAgent.tsx';
-import EditRegistryAgent from './pages/EditRegistryAgentRoles.tsx';
+import RegistryUserManagement from './pages/RegistryUserManagement.tsx';
+import Users from './pages/Users.tsx';
+import ComposeProviders from './context/ComposeProviders.tsx';
+import { LoadingBannerProvider } from './context/LoadingBannerProvider.tsx';
+import ModalContextProvider from './context/ModalContextProvider.tsx';
+import NavContextProvider from './context/NavContextProvider.tsx';
+import BannerContextProvider from './context/BannerContextProvider.tsx';
+import UserContextProvider from './context/UserContextProvider.tsx';
+import RegistryContextProvider from './context/RegistryContextProvider.tsx';
+import LoadingBanner from './components/LoadingBanner.tsx';
 
 const App = () => {
-    const [ navOpen, setNavOpen ] = useState(() => window.innerWidth >= 640);
-    const [ banner, setBanner ] = useState<BannerContext | null>(null);
-    const [ modal, setModal ] = useState<ModalConfig | null>(null);
-    const [ user, setUser ] = useState<UserContextInterface | null>(null);
-    const [ registry, setRegistry ] = useState<Registry | null>(null);
-    const [ localUser, setLocalUser ] = useState<RegistryUser | null>(null);
-    const [ resetUser, setResetUser ] = useState(0);
-    const [ loading, setLoading ] = useState(true);
-
-    const showModal = useCallback((config: ModalConfig) => setModal(config), []);
-    const closeModal = useCallback(() => setModal(null), []);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await apiClient.get("/api/v1/users/auth/me");
-
-                if (!res.ok) {
-                    if (res.status === 401) {
-                        setUser(null);
-                        return;
-                    }
-                    setBanner({ message: "An error occurred while fetching user data.", level: "error" });
-                    return;
-                }
-
-                const userData = await res.json();
-
-                // fetch permissions
-                const permRes = await apiClient.get("/api/v1/users/permissions");
-                if (!permRes.ok) {
-                    setBanner({ message: "Failed to fetch user permissions.", level: "error" });
-                    setUser(userData);
-                    return;
-                }
-
-                const permissions: string[] = await permRes.json();
-                setUser({
-                    ...userData,
-                    permissions: permissions.map(p => UserPermission[p as keyof typeof UserPermission])
-                });
-
-            } catch (err) {
-                console.error(err);
-                setUser(null);
-                setBanner({ message: "Failed to fetch user data.", level: "error" });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUser();
-    }, [resetUser]);
-
-    if (loading) {
-        return <div className="flex items-center justify-center h-screen">
-            <p>Loading...</p>
-        </div>
-    }
 
     return <>
-        <UserContext.Provider value={{ user, setUser, resetUser, setResetUser }} >
-            <NavContext.Provider value={{ navOpen, setNavOpen, banner, setBanner }} >
-                <ModalContext.Provider value={{ showModal, closeModal }} >
-                    <RegistryContext.Provider value={{ registry, setRegistry, localUser, setLocalUser }} >
-                    {modal && <Modal config={modal} onClose={closeModal} />}
-                        <BrowserRouter>
-                            <Routes>
-                                <Route path="/home" element={<Home />} />
-                                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                                <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-                                <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                                <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
-                                <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/users" element={<ProtectedRoute><RegistryUserManagement /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/agents" element ={<ProtectedRoute><RegistryAgentManagement /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/agents/new" element={<ProtectedRoute><CreateRegistryAgent /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/agents/:agentId/edit" element={<ProtectedRoute><EditRegistryAgent /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/logs" element={<ProtectedRoute><RegistryAuditLog /></ProtectedRoute>} />
-                                <Route path="/registries/:registryId/settings" element={<ProtectedRoute><RegistrySettings /></ProtectedRoute>} />
-                                <Route path="/login" element={<Login />}  />
-                                <Route path="/register" element={<Register />} />
-                                <Route path="/" element={<Home />} />
-                                <Route path="*" element={ <PageNotFound /> } />
-                            </Routes>
-                        </BrowserRouter>
-                    </RegistryContext.Provider>
-                </ModalContext.Provider>
-            </NavContext.Provider>
-        </UserContext.Provider>
+        <ComposeProviders providers={[
+            LoadingBannerProvider,
+            ModalContextProvider,
+            BannerContextProvider,
+            UserContextProvider,
+            RegistryContextProvider,
+            NavContextProvider
+        ]}>
+            <div className="scrollbar-gutter-stable h-screen w-screen overflow-auto">
+                <LoadingBanner />
+                <Modal />
+                <BrowserRouter>
+                        <Routes>
+                            <Route path="/home" element={<Home />} />
+                            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                            <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+                            <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                        <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+                        <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/users" element={<ProtectedRoute><RegistryUserManagement /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/agents" element ={<ProtectedRoute><RegistryAgentManagement /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/agents/new" element={<ProtectedRoute><CreateRegistryAgent /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/agents/:agentId/edit" element={<ProtectedRoute><EditRegistryAgent /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/logs" element={<ProtectedRoute><RegistryAuditLog /></ProtectedRoute>} />
+                        <Route path="/registries/:registryId/settings" element={<ProtectedRoute><RegistrySettings /></ProtectedRoute>} />
+                        <Route path="/login" element={<Login />}  />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/" element={<Home />} />
+                        <Route path="*" element={ <PageNotFound /> } />
+                    </Routes>
+                </BrowserRouter>
+            </div>
+        </ComposeProviders>
     </>
 }
 
