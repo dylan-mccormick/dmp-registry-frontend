@@ -1,13 +1,14 @@
-import { useNavigate, useParams } from "react-router";
-import StandardLayout from "../components/StandardLayout";
-import { NavbarLevel } from "../context/NavbarLevel";
-import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
 import React, { useContext, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { RegistryContext } from "../context/RegistryContext";
-import { NavContext } from "../context/NavContext";
-import { coerceRegistryUserPermissionFromString, RegistryUserPermissions } from "../model/RegistryUser";
+import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
 import { ModalContext } from "../context/ModalContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import { RegistryContext } from "../context/RegistryContext";
+import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
+import { coerceRegistryUserPermissionFromString, RegistryUserPermissions } from "../model/RegistryUser";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 interface AddUserResultCardProps {
     id: string,
@@ -31,7 +32,7 @@ const AddUserResultCard = ({ id, username, refreshSearchResults, setRefreshKey }
     const { registryId } = useParams();
 
     const { reload } = useRegistryBootstrap(registryId);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { showModal, closeModal } = useContext(ModalContext);
 
     const onClickAdd = () => {
@@ -82,10 +83,10 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
     const { registryId } = useParams();
 
     const { showModal } = useContext(ModalContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
     const [ dropdownOpen, setDropdownOpen ] = useState(false);
-    const [ loading, setLoading ] = useState(false);
 
     const hasWriteRegistry = roles.includes(RegistryUserPermissions.WRITE_REGISTRY);
     const hasReadAgents = roles.includes(RegistryUserPermissions.READ_AGENTS);
@@ -102,7 +103,7 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
     };
 
     const onSaveRoles = async () => {
-        setLoading(true);
+        addProcess("saving_roles");
 
         const newPermissions: RegistryUserPermissions[] = [
             (!hasWriteRegistry && writeRegistry) && RegistryUserPermissions.WRITE_REGISTRY,
@@ -144,7 +145,7 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
             console.error(err);
             setBanner({ level: "error", message: "Failed to update user permissions." });
         } finally {
-            setLoading(false);
+            removeProcess("saving_roles");
         }
     }
 
@@ -154,7 +155,7 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
             type: "confirm",
             message: `Are you sure you want to remove ${username} from this registry? This action cannot be undone.`,
             onConfirm: () => {
-                setLoading(true);
+                addProcess("deleting_user");
                 apiClient.delete(`/api/v1/registries/${registryId}/users/${id}`).then(async res => {
                     if (!res.ok) {
                         throw new Error(`HTTP Failed with status code ${res.status}: ${await res.text()}`);
@@ -165,7 +166,7 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
                     console.error(err);
                     setBanner({ level: "error", message: "Failed to remove user from the registry." });
                 }).finally(() => {
-                    setLoading(false);
+                    removeProcess("deleting_user");
                     setRefreshKey(k => k + 1);
                 });
             }
@@ -175,14 +176,14 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
     const dropdownComponent = <div className="border border-gray-400 rounded mb-2 p-4">
         <div className="flex flex-col">
             <RoleSelector label="Read Registry" value={true} setValue={() => {}} disabled={true} /> {/* Fake element, all users have this or they will be removed from registry */}
-            <RoleSelector label="Write Registry" value={writeRegistry} setValue={setWriteRegistry} disabled={loading} />
-            <RoleSelector label="Read Agents" value={readAgents} setValue={setReadAgents} disabled={loading} />
-            <RoleSelector label="Write Agents" value={writeAgents} setValue={setWriteAgents} disabled={loading} />
-            <RoleSelector label="Manage Users" value={manageUsers} setValue={() => { if (manageUsers) {setManageUsers(false); return} showModal({ title: "Dangerous Role", type: "confirm", message: "This is a dangerous role to grant. Are you sure you want to proceed?", onConfirm: () => { setManageUsers(true) } }) }} disabled={loading} />
+            <RoleSelector label="Write Registry" value={writeRegistry} setValue={setWriteRegistry} disabled={processes.has("saving_roles")} />
+            <RoleSelector label="Read Agents" value={readAgents} setValue={setReadAgents} disabled={processes.has("saving_roles")} />
+            <RoleSelector label="Write Agents" value={writeAgents} setValue={setWriteAgents} disabled={processes.has("saving_roles")} />
+            <RoleSelector label="Manage Users" value={manageUsers} setValue={() => { if (manageUsers) {setManageUsers(false); return} showModal({ title: "Dangerous Role", type: "confirm", message: "This is a dangerous role to grant. Are you sure you want to proceed?", onConfirm: () => { setManageUsers(true) } }) }} disabled={processes.has("saving_roles")} />
         </div>
 
         <div className="flex justify-end">
-            <button className="button-primary" onClick={onSaveRoles} disabled={loading}>Save</button>
+            <button className="button-primary" onClick={onSaveRoles} disabled={processes.has("saving_roles")}>Save</button>
         </div>
     </div>
 
@@ -202,40 +203,39 @@ const AddUsersPanel = ({ setRefreshKey }: { setRefreshKey: Dispatch<SetStateActi
 
     const { registryId } = useParams();
 
-    const [ loading, setLoading ] = useState(false);
     const [ searchResults, setSearchResults ] = useState<UserSearchResult[] | null>(null);
 
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
-    const searchUsers = (e: React.FormEvent<HTMLFormElement>) => {
+    const searchUsers = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
+        addProcess("searching_users");
 
-        const formData = new FormData(e.currentTarget);
-        const username = formData.get("username") as string;
+        try {
+            const formData = new FormData(e.currentTarget);
+            const username = formData.get("username") as string;
 
-        if (username.trim() == "") {
-            setBanner({ level: "error", message: "Please provide a username."});
-            setLoading(false);
-            return;
-        }
+            if (username.trim() == "") {
+                setBanner({ level: "error", message: "Please provide a username."});
+                return;
+            }
 
-        // fetch users by query
-        apiClient.get(`/api/v1/registries/${registryId}/users/search?search=${encodeURIComponent(username)}`).then(res => {
+            const res = await apiClient.get(`/api/v1/registries/${registryId}/users/search?search=${encodeURIComponent(username)}`);
+
             if (!res.ok) {
                 setBanner({ level: "error", message: "Failed to search for users." });
                 throw new Error("Failed to search for users");
             }
 
-            res.json().then((data: UserSearchResult[]) => {
-                setSearchResults(data);
-            }).catch(err => {
-                console.error("Failed to parse search results", err);
-                setBanner({ level: "error", message: "Failed to parse search results." });
-            }).finally(() => {
-                setLoading(false);
-            });
-        })
+            const data = await res.json() as UserSearchResult[];
+            setSearchResults(data);
+        } catch (err) {
+            console.error(err);
+            setBanner({ level: "error", message: "Failed to search for users." });
+        } finally {
+            removeProcess("searching_users");
+        }
     }
 
     return <>
@@ -243,8 +243,8 @@ const AddUsersPanel = ({ setRefreshKey }: { setRefreshKey: Dispatch<SetStateActi
             <span className="text-xl font-bold">Add Users</span>
             <form onSubmit={searchUsers}>
                 <div className="flex flex-row gap-2 py-2">
-                    <input name="username" placeholder="Enter username..." type="text" className="w-full border rounded h-8 px-2 border-gray-400" disabled={loading}></input>
-                    <button className="button-primary" type="submit" disabled={loading}>Search</button>
+                    <input name="username" placeholder="Enter username..." type="text" className="w-full border rounded h-8 px-2 border-gray-400" disabled={processes.has("searching_users")}></input>
+                    <button className="button-primary" type="submit" disabled={processes.has("searching_users")}>Search</button>
                 </div>
 
                 <div className="my-1 px-4 flex flex-col divide-y divide-gray-400">
@@ -260,36 +260,49 @@ const CurrentUsersPanel = ({ refreshKey, setRefreshKey }: { refreshKey: number, 
 
     const { registryId } = useParams();
 
-    const [ loading, setLoading ] = useState(true);
     const [ currentUsers, setCurrentUsers ] = useState<RegistryUserCardProps[]>([]);
 
-    const { setBanner } = useContext(NavContext);
+    const { addProcess, removeProcess } = useContext(LoadingBannerContext);
+    const { setBanner } = useContext(BannerContext);
 
     useEffect(() => {
-        console.log("refresh key: ", refreshKey);
+        let cancelled = false;
 
-        apiClient.get(`/api/v1/registries/${registryId}/users`).then(async res => {
-            if (!res.ok) {
-                throw new Error(`HTTP failed with status code ${res.status}: ${await res.text()}`)
+        const loadUsers = async () => {
+            addProcess("loading_users");
+
+            try {
+                const res = await apiClient.get(`/api/v1/registries/${registryId}/users`);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP failed with status code ${res.status}: ${await res.text()}`);
+                }
+
+                const data = await res.json() as { users: ({ id: number, username: string, permissions: string[] })[] };
+
+                if (cancelled) return;
+
+                setCurrentUsers(data.users.map(u => ({ id: u.id, username: u.username, roles: u.permissions.map(p => coerceRegistryUserPermissionFromString(p)) })));
+            } catch (err) {
+                console.error(err);
+                if (!cancelled) {
+                    setBanner({ level: "error", message: "Unable to fetch current users for registry." });
+                }
+            } finally {
+                removeProcess("loading_users");
             }
+        };
 
-            res.json().then(data => {
-                setLoading(false);
-                const result: { users: ({ id: number, username: string, permissions: string[] })[] } = data;
-                setCurrentUsers(result.users.map(u => ({ id: u.id, username: u.username, roles: u.permissions.map(p => coerceRegistryUserPermissionFromString(p)) })));
-            })
-        }).catch((err) => {
-            console.error(err);
-            setBanner({ level: "error", message: "Unable to fetch current users for registry." });
-        })
-    }, [ registryId, setBanner, refreshKey ]);
+        loadUsers();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [registryId, addProcess, removeProcess, setBanner, refreshKey]);
 
     return <>
         <div className="mx-8 p-2 border rounded">
             <span className="text-xl font-bold mb-2">Current Users</span>
-            <div className="text-center">
-                {loading && <span className="text-center">Loading users...</span>}
-            </div>
             <div className="px-4 divide-y divide-gray-400">
                 {currentUsers.map(u => <RegistryUserCard key={u.id} id={u.id} username={u.username} roles={u.roles} setRefreshKey={setRefreshKey}></RegistryUserCard>)}
             </div>
@@ -304,7 +317,7 @@ const RegistryUserManagement = () => {
 
     const { registryLoading, registryLoadingError } = useRegistryBootstrap(registryId);
     const { localUser } = useContext(RegistryContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
 
     const [ refreshKey, setRefreshKey ] = useState(0);
 

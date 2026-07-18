@@ -1,12 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { createContext, type SetStateAction } from "react";
+import { createContext } from "react";
 import type { Registry } from "../model/Registry";
 import type { RegistryUser } from "../model/RegistryUser";
 
-export const RegistryContext = createContext({
-    registry: null as Registry | null,
-    setRegistry: (_: SetStateAction<Registry | null>) => {},
-    localUser: null as RegistryUser | null,
-    setLocalUser: (_: SetStateAction<RegistryUser | null>) => {}
+interface RegistryContext {
+    registry: Registry | undefined,
+    setRegistry: (registry: Registry | undefined) => void;
+    localUser: RegistryUser | undefined,
+    setLocalUser: (user: RegistryUser | undefined) => void;
+}
+
+export const RegistryContext = createContext<RegistryContext>({
+    registry: undefined,
+    setRegistry: () => {},
+    localUser: undefined,
+    setLocalUser: () => {}
 });

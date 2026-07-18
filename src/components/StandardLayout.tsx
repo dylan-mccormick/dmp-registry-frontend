@@ -1,15 +1,16 @@
+import { Database, FileClock, Gauge, Link, Settings, SlidersHorizontal, Undo2, UserKey, Users } from "lucide-react";
 import { useContext, useEffect, useMemo, type ReactNode } from "react";
+import { useParams } from "react-router";
+import { NavbarLevel } from "../context/NavbarLevel";
+import { NavContext } from "../context/NavContext";
+import { RegistryContext } from "../context/RegistryContext";
+import { UserContext } from "../context/UserContext";
+import { RegistryUserPermissions } from "../model/RegistryUser";
+import Banner from "./Banner";
 import Header from "./Header";
 import Navbar from "./Navbar";
 import type { NavbarComponentProps } from "./NavbarComponent";
-import { NavContext } from "../context/NavContext";
-import Banner from "./Banner";
-import { UserContext } from "../context/UserContext";
-import { NavbarLevel } from "../context/NavbarLevel";
-import { Database, FileClock, Gauge, Link, Settings, SlidersHorizontal, Undo2, UserKey, Users } from "lucide-react";
-import { useParams } from "react-router";
-import { RegistryContext } from "../context/RegistryContext";
-import { RegistryUserPermissions } from "../model/RegistryUser";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 interface StandardLayoutProps {
     children: ReactNode;
@@ -24,6 +25,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
     const { navOpen, setNavOpen } = useContext(NavContext);
     const { user } = useContext(UserContext);
     const { localUser } = useContext(RegistryContext);
+    const { processes } = useContext(LoadingBannerContext);
 
     const { registryId } = useParams();
 
@@ -49,14 +51,14 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
         if (navbarLevel === NavbarLevel.REGISTRY) {
             items.push({ text: "Return to Dashboard", icon: <Undo2 />, to: "/dashboard" });
             items.push({ text: "Registry Dashboard", icon: <Database />, to: `/registries/${registryId}` });
-            if (localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
-            if (localUser?.permissions?.includes(RegistryUserPermissions.READ_AGENTS)) items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
-            if (localUser?.isOwner) items.push({ text: "Audit Log", icon: <FileClock />, to: `/registries/${registryId}/logs` });
-            if (localUser?.isOwner) items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });
+            if (!processes.has("loading_local_user") && localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS)) items.push({ text: "Manage Users", icon: <UserKey />, to: `/registries/${registryId}/users` });
+            if (!processes.has("loading_local_user") && localUser?.permissions?.includes(RegistryUserPermissions.READ_AGENTS)) items.push({ text: "Manage Agents", icon: <Link />, to: `/registries/${registryId}/agents` });
+            if (!processes.has("loading_local_user") && localUser?.isOwner) items.push({ text: "Audit Log", icon: <FileClock />, to: `/registries/${registryId}/logs` });
+            if (!processes.has("loading_local_user") && localUser?.isOwner) items.push({ text: "Registry Settings", icon: <SlidersHorizontal />, to: `/registries/${registryId}/settings` });
         }
 
         return [...(navItems || []), ...items];
-    }, [ navItems, navbarLevel, registryId, user, localUser ]);
+    }, [navbarLevel, navItems, user?.permissions, registryId, processes, localUser?.permissions, localUser?.isOwner]);
 
     return (
         <>

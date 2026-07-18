@@ -1,8 +1,8 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useContext, useState, type Dispatch, type SetStateAction } from "react";
 
-import { type ModalConfig } from "../context/ModalContext";
-import { FormField } from "./CreationForm";
 import { LoaderCircle } from "lucide-react";
+import { ModalContext } from "../context/ModalContext";
+import { FormField } from "./CreationForm";
 
 const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesChange }: { filesLimit?: number, sizeLimit?: number, acceptedFileExtensions?: string[], onFilesChange: Dispatch<SetStateAction<File[]>> }) => {
     const [files, setFiles] = useState<File[]>([]);
@@ -84,12 +84,17 @@ const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesCha
     );
 };
 
-const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }) => {
+const Modal = () => {
+
+    const { modal: config, closeModal: onClose } = useContext(ModalContext);
+
     const [inputValue, setInputValue] = useState('');
     const [ files, setFiles ] = useState<File[]>([]);
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         onClose();
+        if (!config) return;
+
         if (config.type === 'form') {
             const formData = new FormData(document.querySelector('#modal-form') as HTMLFormElement);
             const formValues: Record<string, string> = {};
@@ -107,9 +112,9 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
             config.onConfirm?.(inputValue);
             setInputValue('');
         }
-    }
+    }, [config, files, inputValue, onClose]);
 
-    return (
+    return config && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
                 <h2 className="text-lg font-bold mb-2">{config.title}</h2>
@@ -147,8 +152,8 @@ const Modal = ({ config, onClose }: { config: ModalConfig, onClose: () => void }
                     />
                 </>}
 
-                {config.loadingSpinner && <div className="flex justify-center items-center my-4">
-                    <LoaderCircle className="text-primary w-12 h-12 animate-spin" />
+                {config.loadingSpinner && <div className="flex items-center justify-center">
+                    <LoaderCircle className="w-12 h-12 animate-spin text-primary" />
                 </div>}
 
                 <div className="flex gap-2 justify-end">

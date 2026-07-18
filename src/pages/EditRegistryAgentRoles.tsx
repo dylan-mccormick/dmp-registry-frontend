@@ -1,12 +1,13 @@
-import { useNavigate, useParams } from "react-router";
-import StandardLayout from "../components/StandardLayout"
-import { NavbarLevel } from "../context/NavbarLevel"
-import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
 import { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
-import { ModalContext } from "../context/ModalContext";
-import { NavContext } from "../context/NavContext";
 import CreationForm, { FormField } from "../components/CreationForm";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { ModalContext } from "../context/ModalContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 const EditRegistryAgent = () => {
 
@@ -16,17 +17,16 @@ const EditRegistryAgent = () => {
     const { registryLoading } = useRegistryBootstrap(registryId);
 
     const { showModal } = useContext(ModalContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
 
-    const [ updating, setUpdating ] = useState(false);
-    const [ loading, setLoading ] = useState(true);
     const [ hasWritePermission, setHasWritePermission ] = useState(false);
     const [ hasReadPermission, setHasReadPermission ] = useState(false);
     const [ agentName, setAgentName ] = useState("");
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setUpdating(true);
+        addProcess("updating_agent");
 
         const formData = new FormData(e.currentTarget);
         const agentName = formData.get("agentName") as string;
@@ -42,13 +42,13 @@ const EditRegistryAgent = () => {
 
         if (agentName.trim().length === 0 || agentName.trim().length > 255) {
             setBanner({ message: "Agent name must be between 1 and 255 characters.", level: "error" });
-            setUpdating(false);
+            removeProcess("updating_agent");
             return;
         }
 
         if (!(/^\w+$/.test(agentName))) {
             setBanner({ message: "Agent name must only contain alphanumeric characters and underscores.", level: "error" });
-            setUpdating(false);
+            removeProcess("updating_agent");
             return;
         }
 
@@ -56,7 +56,7 @@ const EditRegistryAgent = () => {
             if (!res.ok) {
                 if (res.status === 409) {
                     setBanner({ message: "An agent with that name already exists. Please choose a different name.", level: "error" });
-                    setUpdating(false);
+                    removeProcess("updating_agent");
                     return;
                 }
 
@@ -109,12 +109,11 @@ const EditRegistryAgent = () => {
         }).catch(err => {
             console.error("Failed to update registry agent:", err);
             setBanner({ message: "Failed to update registry agent. Please try again.", level: "error" });
-        }).finally(() => setUpdating(false));
+        }).finally(() => removeProcess("updating_agent"));
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setLoading(true);
+        addProcess("fetching_agent");
         apiClient.get(`/api/v1/registries/${registryId}/agents/${agentId}`).then(async res => {
             if (!res.ok) {
                 throw new Error(`HTTP request failed with status code ${res.status}: ${await res.text()}`);
@@ -134,12 +133,12 @@ const EditRegistryAgent = () => {
             }).catch(err => {
                 console.error("Failed to fetch registry agent permissions:", err);
                 setBanner({ message: "Failed to fetch registry agent permissions. Please try again.", level: "error" });
-            }).finally(() => setLoading(false));
+            }).finally(() => removeProcess("fetching_agent"));
         }).catch(err => {
             console.error("Failed to fetch registry agent:", err);
             setBanner({ message: "Failed to fetch registry agent. Please try again.", level: "error" });
-        }).finally(() => setLoading(false));
-    }, [ agentId, registryId, setBanner ]);
+        }).finally(() => removeProcess("fetching_agent"));
+    }, [ agentId, registryId, setBanner, addProcess, removeProcess ]);
 
     const formFields: FormField[] = [
         { name: "agentName", label: "Agent Name", type: "text", placeholder: "Agent Name", required: true, stateValue: agentName, setStateValue: setAgentName },
@@ -151,7 +150,7 @@ const EditRegistryAgent = () => {
         <StandardLayout title="Edit Registry Agent" navbarLevel={NavbarLevel.REGISTRY} >
             <div className="p-8">
                 { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> || <>
-                    <CreationForm title="Edit Registry Agent" onSubmit={handleSubmit} buttonText="Update Agent" buttonLoadingText="Updating..." loading={updating} fields={formFields} formDisabled={loading} />
+                    <CreationForm title="Edit Registry Agent" onSubmit={handleSubmit} buttonText="Update Agent" buttonLoadingText="Updating..." loading={processes.has("updating_agent")} fields={formFields} formDisabled={processes.has("fetching_agent")} />
                 </>}
             </div>
         </StandardLayout>

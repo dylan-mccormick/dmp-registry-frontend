@@ -1,23 +1,25 @@
 import { useCallback, useContext, useEffect } from "react";
-import StandardLayout from "../components/StandardLayout";
-import { NavbarLevel } from "../context/NavbarLevel";
-import { RegistryContext } from "../context/RegistryContext";
 import { useNavigate, useParams } from "react-router";
-import { NavContext } from "../context/NavContext";
-import useRegistryBootstrap, { RegistryLoadingState } from "../hooks/useRegistryBootstrap";
 import FilesystemController from "../components/registryControllers/FilesystemController";
+import KeyValueController from "../components/registryControllers/KeyValueController";
 import MongoDBController from "../components/registryControllers/MongoDBController";
 import SQLiteController from "../components/registryControllers/SQLiteController";
-import KeyValueController from "../components/registryControllers/KeyValueController";
+import StandardLayout from "../components/StandardLayout";
+import { BannerContext } from "../context/BannerContext";
+import { NavbarLevel } from "../context/NavbarLevel";
+import { RegistryContext } from "../context/RegistryContext";
+import useRegistryBootstrap from "../hooks/useRegistryBootstrap";
+import { LoadingBannerContext } from "../context/LoadingBannerContext";
 
 const RegistryDashboard = () => {
     const { registryId } = useParams();
 
     const navigate = useNavigate();
 
-    const { registryLoading, registryLoadingError } = useRegistryBootstrap(registryId);
+    const { registryLoadingError } = useRegistryBootstrap(registryId);
     const { registry } = useContext(RegistryContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
+    const { processes } = useContext(LoadingBannerContext);
 
     const kickbackUser = useCallback(() => {
         // Show error modal
@@ -33,26 +35,39 @@ const RegistryDashboard = () => {
         if (registryLoadingError) {
             kickbackUser();
         }
-    }, [ registryLoadingError, kickbackUser ])
+    }, [registryLoadingError, kickbackUser]);
 
-    return <>
+    return (
+        <>
             <StandardLayout navbarLevel={NavbarLevel.REGISTRY}>
-                {registryLoading != RegistryLoadingState.LOADED && <div className="text-center mt-8">Loading registry details...</div> ||
+                {!processes.has("loading_registry") &&
                 <div className="p-8">
                     <div>
                         {(() => {
                             switch (registry?.type) {
-                                case "files": return <FilesystemController />;
-                                case "mongodb": return <MongoDBController />;
-                                case "sqlite": return <SQLiteController />;
-                                case "keyvalue": return <KeyValueController />;
-                                default: return <div className="border-red-500 bg-red-200 border br rounded p-4 text-red-900" >Sorry, the controller for this registry type has not yet been implemented.</div>
+                                case "files":
+                                    return <FilesystemController />;
+                                case "mongodb":
+                                    return <MongoDBController />;
+                                case "sqlite":
+                                    return <SQLiteController />;
+                                case "keyvalue":
+                                    return <KeyValueController />;
+                                default:
+                                    return (
+                                        <div className="border-red-500 bg-red-200 border br rounded p-4 text-red-900">
+                                            Sorry, the controller for this
+                                            registry type has not yet been
+                                            implemented.
+                                        </div>
+                                    );
                             }
                         })()}
                     </div>
                 </div>}
             </StandardLayout>
         </>
+    );
 };
 
 export default RegistryDashboard;

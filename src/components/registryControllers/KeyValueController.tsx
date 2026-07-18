@@ -1,13 +1,13 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import HTMLTable from "../HTMLTable";
 import { useParams } from "react-router";
-import { ModalContext } from "../../context/ModalContext";
-import { NavContext } from "../../context/NavContext";
-import useRegistryBootstrap from "../../hooks/useRegistryBootstrap";
 import apiClient from "../../apiClient";
-import PageHeader from "../PageHeader";
+import { BannerContext } from "../../context/BannerContext";
+import { ModalContext } from "../../context/ModalContext";
 import { RegistryContext } from "../../context/RegistryContext";
+import useRegistryBootstrap from "../../hooks/useRegistryBootstrap";
 import { RegistryUserPermissions } from "../../model/RegistryUser";
+import HTMLTable from "../HTMLTable";
+import PageHeader from "../PageHeader";
 
 const KeyValueController = () => {
 
@@ -16,7 +16,7 @@ const KeyValueController = () => {
     const { registryLoading } = useRegistryBootstrap(registryId);
 
     const { showModal } = useContext(ModalContext);
-    const { setBanner } = useContext(NavContext);
+    const { setBanner } = useContext(BannerContext);
     const { registry, localUser } = useContext(RegistryContext);
 
     const [ loading ] = useState(false);

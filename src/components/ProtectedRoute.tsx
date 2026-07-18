@@ -3,7 +3,9 @@ import { Navigate } from "react-router";
 import { UserContext } from "../context/UserContext";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user } = useContext(UserContext);
+    const { user, loading } = useContext(UserContext);
+
+    if (loading) return null; // or a spinner
     return user ? <>{children}</> : <Navigate to="/home" />;
 }
 
