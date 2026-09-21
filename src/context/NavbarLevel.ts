@@ -1,3 +1,5 @@
+// NavbarLevel.ts
+// Enum describing different degrees of information for Navbar
 
 export const NavbarLevel = {
     HIDDEN: 0,
