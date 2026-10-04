@@ -36,7 +36,7 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
     return <>
         <th className="border-y-2 border-x border-gray-300 px-4 py-2 min-w-37.5 sm:min-w-45" key={index}>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 w-full">
-                <div className="flex flex-row justify-between items-center sm:flex-1 sm:min-w-0 sm:max-w-[calc(100%-60px)]">
+                <div className={`flex flex-row justify-between items-center sm:flex-1 sm:min-w-0 ${col.queryable !== false ? "sm:max-w-[calc(100%-60px)]" : ""}`}>
                     {searchOpen ? (
                         <input
                             type="text"
