@@ -2,6 +2,7 @@ import { useCallback, useContext, useState, type Dispatch, type SetStateAction }
 
 import { LoaderCircle } from "lucide-react";
 import { ModalContext } from "../context/ModalContext";
+import { formatSize } from "../utils/formatSize";
 import { FormField } from "./CreationForm";
 
 const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesChange }: { filesLimit?: number, sizeLimit?: number, acceptedFileExtensions?: string[], onFilesChange: Dispatch<SetStateAction<File[]>> }) => {
@@ -32,12 +33,6 @@ const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesCha
 
         setFiles(arr);
         onFilesChange(arr);
-    };
-
-    const formatSize = (bytes: number) => {
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
     return (
@@ -108,7 +103,7 @@ const Modal = () => {
             config.onConfirm?.(files);
             return;
         }
-        if (config.type !== 'buttonless') {
+        if (config.type !== 'buttonless' && config.type !== 'custom') {
             config.onConfirm?.(inputValue);
             setInputValue('');
         }
@@ -152,12 +147,14 @@ const Modal = () => {
                     />
                 </>}
 
+                {config.type === 'custom' && config.content}
+
                 {config.loadingSpinner && <div className="flex items-center justify-center">
                     <LoaderCircle className="w-12 h-12 animate-spin text-primary" />
                 </div>}
 
                 <div className="flex gap-2 justify-end">
-                    {config.type !== 'buttonless' && <>
+                    {config.type !== 'buttonless' && config.type !== 'custom' && <>
                         {config.type !== 'alert' && (
                             <button className="button-secondary" onClick={() => {
                                 setInputValue('');

@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, type ReactNode } from "react";
 import type { FormField } from "../components/CreationForm";
 
 interface BaseModalConfig {
@@ -46,6 +46,12 @@ interface ButtonlessModalConfig extends BaseModalConfig {
     type: 'buttonless';
 }
 
+// Renders arbitrary content with no default buttons; the content is responsible for closing the modal
+interface CustomModalConfig extends BaseModalConfig {
+    type: 'custom';
+    content: ReactNode;
+}
+
 export type ModalConfig =
     | AlertModalConfig
     | ConfirmModalConfig
@@ -53,6 +59,7 @@ export type ModalConfig =
     | FileModalConfig
     | FormModalConfig
     | ButtonlessModalConfig
+    | CustomModalConfig
 
 interface ModalContextInterface {
     showModal: (config: ModalConfig) => void;
