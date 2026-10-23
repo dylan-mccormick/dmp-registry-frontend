@@ -33,8 +33,8 @@ const LogoutComponent = (props: HeaderProps) => {
     }
 
     return <div className="flex items-center gap-1">
-        <Link to="/profile" className="flex items-center gap-2.5 rounded-full py-1 pr-3 pl-1 transition-colors hover:bg-surface">
-            <span className="grid size-7 place-items-center rounded-full bg-ink text-xs font-semibold text-snow uppercase">
+        <Link to="/profile" aria-label={`${props.loggedInUser}, account settings`} className="flex items-center gap-2.5 rounded-full py-1 pr-3 pl-1 transition-colors hover:bg-surface">
+            <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-ink text-xs font-semibold text-snow uppercase">
                 {props.loggedInUser?.charAt(0)}
             </span>
             <span className="hidden text-meta font-medium sm:inline">{props.loggedInUser}</span>
@@ -66,6 +66,7 @@ const Header = (props: HeaderProps) => {
                             title={navOpen ? "Hide sidebar" : "Show sidebar"}
                             aria-label={navOpen ? "Hide sidebar" : "Show sidebar"}
                             aria-expanded={navOpen}
+                            aria-controls="sidebar"
                         >
                             <PanelLeft className="hidden size-4.5 sm:block" />
                             <Menu className="size-4.5 sm:hidden" />

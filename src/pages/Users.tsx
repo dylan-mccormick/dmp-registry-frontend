@@ -57,7 +57,7 @@ const Users = () => {
                             { text: "Email", dataKey: "email" },
                             { text: "Actions", dataKey: "actions", queryable: false, fixedPixelSize: 200 }
                     ]}
-                    data={users.map(u => ({ ...u, actions: <button className="button-secondary" onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
+                    data={users.map(u => ({ ...u, actions: <button className="button-secondary" aria-label={`Edit ${u.username}`} onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
                     />)}
 
                 {/* <div className="flex flex-col w-full">

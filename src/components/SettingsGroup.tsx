@@ -24,7 +24,7 @@ interface SettingsRowProps {
 
 export const SettingsRow = ({ label, htmlFor, hint, children }: SettingsRowProps) => <div className="flex flex-col gap-2 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
     <div className="min-w-0">
-        <label htmlFor={htmlFor} className="text-body">{label}</label>
+        {htmlFor ? <label htmlFor={htmlFor} className="text-body">{label}</label> : <span className="text-body">{label}</span>}
         {hint && <p className="text-meta text-legend">{hint}</p>}
     </div>
     <div className="flex min-w-0 items-center sm:w-80 sm:shrink-0 sm:justify-end">

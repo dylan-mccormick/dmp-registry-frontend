@@ -15,6 +15,7 @@ import type { RegistrySummary, UserRegistrySummary } from "../model/RegistrySumm
 import { formatDateShort, registryPermissionLabels, registryTypeIcon, registryTypeLabel } from "../utils/registryDisplay";
 
 type Tab = 'registries' | 'roles' | 'profile';
+const tabs: Tab[] = ['registries', 'roles', 'profile'];
 
 const RegistriesPanel = ({ targetUserId }: { targetUserId: string }) => {
     const navigate = useNavigate();
@@ -335,13 +336,27 @@ const EditUser = () => {
             <div className="page">
                 <PageHeader eyebrow="User Management" title={targetUser?.username || `User ${id}`} subtitle={targetUser?.email} />
 
-                {/* Tab Bar */}
-                <div role="tablist" className="mb-8 inline-flex rounded-full bg-surface p-1">
-                    {(['registries', 'roles', 'profile'] as Tab[]).map(tab => (
+                {/* Tab Bar: ARIA tabs pattern, arrow keys move between tabs */}
+                <div role="tablist" aria-label="User details" className="mb-8 inline-flex rounded-full bg-surface p-1" onKeyDown={e => {
+                    const index = tabs.indexOf(activeTab);
+                    const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length
+                        : e.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
+                        : e.key === 'Home' ? 0
+                        : e.key === 'End' ? tabs.length - 1
+                        : null;
+                    if (next === null) return;
+                    e.preventDefault();
+                    setActiveTab(tabs[next]);
+                    document.getElementById(`tab-${tabs[next]}`)?.focus();
+                }}>
+                    {tabs.map(tab => (
                         <button
                             key={tab}
+                            id={`tab-${tab}`}
                             role="tab"
                             aria-selected={activeTab === tab}
+                            aria-controls={`tabpanel-${tab}`}
+                            tabIndex={activeTab === tab ? 0 : -1}
                             onClick={() => setActiveTab(tab)}
                             className={`min-h-8 cursor-pointer rounded-full px-4 text-meta font-medium capitalize transition-all duration-200 ${
                                 activeTab === tab
@@ -355,9 +370,11 @@ const EditUser = () => {
                 </div>
 
                 {/* Tab Content */}
-                {activeTab === 'registries' && <RegistriesPanel targetUserId={id!} />}
-                {activeTab === 'roles' && <RolesPanel targetUserId={id!} />}
-                {activeTab === 'profile' && <ProfilePanel userId={id!} username={targetUser?.username || ""} email={targetUser?.email || ""} emailVerified={targetUser?.emailVerified || false} createdAt={targetUser?.createdAt || ""} tokenVersion={targetUser?.tokenVersion || 0} />}
+                <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+                    {activeTab === 'registries' && <RegistriesPanel targetUserId={id!} />}
+                    {activeTab === 'roles' && <RolesPanel targetUserId={id!} />}
+                    {activeTab === 'profile' && <ProfilePanel userId={id!} username={targetUser?.username || ""} email={targetUser?.email || ""} emailVerified={targetUser?.emailVerified || false} createdAt={targetUser?.createdAt || ""} tokenVersion={targetUser?.tokenVersion || 0} />}
+                </div>
 
             </div>
         </StandardLayout>

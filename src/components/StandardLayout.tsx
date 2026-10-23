@@ -63,6 +63,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
     return (
         <>
             <div className="flex h-screen flex-col overflow-hidden bg-bg">
+                <a href="#main-content" className="sr-only z-40 rounded-full bg-ink px-4 py-2 text-meta text-snow focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
                 <Header loggedInUser={user?.username || ""} hideNavbar={(renderedNavItems || []).length == 0} />
                 <div className="flex flex-1 overflow-hidden">
                     {(renderedNavItems || []).length > 0 && <Navbar navItems={renderedNavItems || []} />}
@@ -75,7 +76,7 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
                         />
                     )}
 
-                    <main className="flex-1 overflow-y-auto">
+                    <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto outline-none">
                         <Banner />
 
                         {children}

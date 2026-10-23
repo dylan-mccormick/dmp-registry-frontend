@@ -5,6 +5,7 @@
  *   ink     primary text            legend  secondary text
  *   surface grouped backgrounds     rule    hairlines
  *   blue    actions                 signal  links
+ *   control borders of form controls (3:1 against bg and surface, WCAG 1.4.11)
  */
 @theme {
     --color-snow: #ffffff;
@@ -17,11 +18,12 @@
     --color-ink: var(--color-graphite);
     --color-legend: var(--color-slate);
     --color-rule: #d2d2d7;
+    --color-control: #86868b;
     --color-blue: #0071e3;
-    --color-blue-hover: #0077ed;
+    --color-blue-hover: #0068d1;
     --color-signal: #0066cc;
-    --color-danger: #e30000;
-    --color-success: #1d8a3a;
+    --color-danger: #cc0000;
+    --color-success: #248a3d;
 
     /* legacy alias so `text-primary` etc. keep working */
     --color-primary: var(--color-blue);
@@ -89,7 +91,7 @@
     }
 
     :focus-visible {
-        @apply outline-2 outline-offset-2 outline-blue/60;
+        @apply outline-2 outline-offset-2 outline-blue;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -112,7 +114,7 @@
 
 /* Text inputs, selects and textareas */
 @utility field {
-    @apply w-full min-h-11 rounded-xl border border-rule bg-bg px-3.5 py-2 text-body text-ink placeholder:text-legend/70 transition-[border-color,box-shadow] duration-150 outline-none focus:border-blue focus:ring-4 focus:ring-blue/15 disabled:cursor-not-allowed disabled:bg-surface disabled:text-legend user-invalid:border-danger user-invalid:focus:ring-danger/15;
+    @apply w-full min-h-11 rounded-xl border border-control bg-bg px-3.5 py-2 text-body text-ink placeholder:text-legend transition-[border-color,box-shadow] duration-150 outline-none focus:border-blue focus:ring-4 focus:ring-blue/15 disabled:cursor-not-allowed disabled:bg-surface disabled:text-legend user-invalid:border-danger user-invalid:focus:ring-danger/15;
 }
 
 /* Read-only value displayed where an input would be */
@@ -122,7 +124,7 @@
 
 /* iOS-style toggle; apply to a checkbox */
 @utility switch {
-    @apply relative h-[1.625rem] w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-rule transition-colors duration-200 checked:bg-[#34c759] disabled:cursor-not-allowed disabled:opacity-40;
+    @apply relative h-[1.625rem] w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-control transition-colors duration-200 checked:bg-success disabled:cursor-not-allowed disabled:opacity-40;
 
     &::before {
         content: "";
@@ -156,7 +158,7 @@
 }
 
 @utility button-destructive {
-    @apply button-base bg-danger/8 text-danger not-disabled:hover:bg-danger/14 not-disabled:active:bg-danger/20;
+    @apply button-base bg-danger/8 text-danger not-disabled:hover:bg-danger/14 not-disabled:active:bg-danger/14;
 }
 
 @utility button-link {

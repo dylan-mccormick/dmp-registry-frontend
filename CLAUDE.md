@@ -37,6 +37,8 @@ React 19 + TypeScript + Vite SPA frontend for the DMP Registry — a system wher
 
 Apple-style visual language shared with mnmzc.dev. Tokens live in `@theme` in `src/index.css` (`ink`, `legend`, `surface`, `rule`, `blue`, `signal`, `danger`; `text-meta/body/h3/h2/h1`). Use the custom utilities there instead of ad-hoc styling: `page` (content container), `card`, `field` / `field-static` / `label`, `button-primary|secondary|tertiary|destructive|link|icon`, `switch` (iOS toggle on a checkbox), `chip`. Page titles go through `PageHeader`; settings-style forms use `SettingsGroup` / `SettingsRow` / `SettingsActions`. Don't stack a conflicting color utility on a `button-*` class (e.g. `button-secondary bg-bg`) — CSS order isn't guaranteed; add or pick a variant instead (`button-tertiary` is the secondary button for `surface` backgrounds).
 
+Accessibility (WCAG 2.2 AA): colors were picked to pass contrast, so check ratios before changing tokens. Form-control borders and switch tracks use `control` (3:1 against `bg` and `surface`), not `rule`; don't put text in `legend` below full opacity. `Modal` is a native `<dialog>` opened with `showModal()`, which handles focus trap, Escape and focus return, so don't add a custom overlay. Icon-only buttons need an `aria-label`, and repeated row buttons ("Edit", "Delete") should name their row (e.g. `aria-label={`Edit ${name}`}`).
+
 ## Conventions
 
 - `tsconfig` enables `erasableSyntaxOnly` and `verbatimModuleSyntax`: no TS `enum`s — use the `const` object + derived type pattern (see `model/RegistryType.ts`, `context/NavbarLevel.ts`) with `coerce…FromString` helpers to validate API strings; use `import type` for type-only imports.
