@@ -1,4 +1,5 @@
-import { useContext, useEffect, useState } from "react";
+import { ChevronRight, Database, FolderClosed, KeyRound, Leaf, Plus } from "lucide-react";
+import { useContext, useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../apiClient";
 import PageHeader from "../components/PageHeader";
@@ -26,6 +27,13 @@ const fetchRegistries = async () => {
     });
 };
 
+const registryTypeDisplay: Record<string, { label: string; icon: ReactNode }> = {
+    files: { label: "Files", icon: <FolderClosed /> },
+    mongodb: { label: "MongoDB", icon: <Leaf /> },
+    sqlite: { label: "SQLite", icon: <Database /> },
+    keyvalue: { label: "Key-Value", icon: <KeyRound /> },
+};
+
 const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
     const navigate = useNavigate();
 
@@ -38,19 +46,24 @@ const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
 
     return (
         <>
-            <div
-                className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer text-left"
+            <button
+                className="group relative flex h-full w-full cursor-pointer flex-col rounded-3xl bg-surface p-6 text-left transition-colors duration-200 hover:bg-rule/40 sm:p-7"
                 onClick={navigateAway}
             >
-                <h2 className="text-xl font-semibold mb-2">{registry.name}</h2>
-                <p className="text-gray-600 mb-1">
-                    Owner: {registry.owner ?? "Unassigned"}
+                <div className="mb-10 flex items-start justify-between gap-4">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-bg text-ink [&>svg]:size-5">
+                        {registryTypeDisplay[registry.type]?.icon ?? <Database />}
+                    </span>
+                    <span className="chip">{registryTypeDisplay[registry.type]?.label ?? registry.type}</span>
+                </div>
+                <h2 className="mb-2 flex items-center gap-1 text-h3 font-semibold break-words">
+                    <span className="min-w-0">{registry.name}</span>
+                    <ChevronRight className="size-5 shrink-0 text-legend transition-transform duration-200 group-hover:translate-x-0.5" />
+                </h2>
+                <p className="text-meta text-legend">
+                    {registry.owner ?? "Unassigned"} · Created {new Date(registry.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                 </p>
-                <p className="text-gray-600 mb-1">Type: {registry.type}</p>
-                <p className="text-gray-500 text-sm">
-                    Created: {new Date(registry.createdAt).toLocaleDateString()}
-                </p>
-            </div>
+            </button>
         </>
     );
 };
@@ -85,22 +98,29 @@ const Dashboard = () => {
                 navbarLevel={NavbarLevel.TOP}
                 title="Registries Directory"
             >
-                <div className="p-8">
+                <div className="page">
                     <PageHeader
-                        title="Registries Directory"
-                        buttonText={
-                            createRegistries ? "Create New Registry" : undefined
-                        }
-                        buttonAction={() => navigate("/registries/new")}
+                        eyebrow="Dashboard"
+                        title="Registries"
+                        subtitle="Every registry you own or have been given access to."
+                        actions={createRegistries && (
+                            <button className="button-primary" onClick={() => navigate("/registries/new")}>
+                                <Plus className="size-4" /> New Registry
+                            </button>
+                        )}
                     />
 
-                    {!processes.has("fetching_registries") && <div className="text-center">
+                    {!processes.has("fetching_registries") && <>
                         {registries.length === 0 && (
-                            <span className="text-gray-500">
-                                No registries found.
-                            </span>
+                            <div className="card flex flex-col items-center py-16 text-center">
+                                <span className="mb-4 grid size-12 place-items-center rounded-xl bg-bg text-legend"><Database className="size-5" /></span>
+                                <p className="text-body font-medium">No registries yet</p>
+                                <p className="mt-1 text-meta text-legend">
+                                    {createRegistries ? "Create your first registry to get started." : "Registries shared with you will appear here."}
+                                </p>
+                            </div>
                         )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {registries.map((registry) => (
                                 <RegistryGridCard
                                     key={registry.id}
@@ -108,7 +128,7 @@ const Dashboard = () => {
                                 />
                             ))}
                         </div>
-                    </div>}
+                    </>}
                 </div>
             </StandardLayout>
         </>

@@ -27,7 +27,7 @@ interface FileMeta {
 }
 
 // Styling for the icon buttons in the actions column
-const iconButtonClass = "p-1 rounded hover:bg-gray-200 active:bg-gray-300 hover:cursor-pointer";
+const iconButtonClass = "button-icon size-8";
 
 // Get the basename of a filepath
 const baseName = (filePath: string) => {
@@ -53,15 +53,15 @@ const FileDetails = ({ filePath, meta, onView, onDownload, onClose }: FileDetail
     ];
 
     return <div className="flex flex-col gap-4">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 rounded-2xl bg-surface p-4 text-meta">
             {details.map(([ label, value ]) => <Fragment key={label}>
-                <dt className="text-gray-500">{label}</dt>
+                <dt className="text-legend">{label}</dt>
                 <dd className="break-all">{value}</dd>
             </Fragment>)}
         </dl>
-        <div className="flex gap-2 justify-end">
+        <div className="mt-2 flex justify-end gap-2">
             <button className="button-secondary" onClick={onClose}>Close</button>
-            <button className="button-primary" onClick={onView}>View</button>
+            <button className="button-secondary" onClick={onView}>View</button>
             <button className="button-primary" onClick={onDownload}>Download</button>
         </div>
     </div>
@@ -78,10 +78,10 @@ const FileEditor = ({ meta, onSave, onDelete, onCancel }: FileEditorProps) => {
     const [ isPublic, setIsPublic ] = useState(meta.isPublic);
 
     return <div className="flex flex-col gap-2">
-        <p className="text-gray-600 text-sm">Public files can be accessed by anyone without logging in.</p>
+        <p className="text-meta text-legend">Public files can be accessed by anyone without logging in.</p>
         <FormField name="isPublic" type="checkbox" labelText="Public File" stateValue={isPublic} setStateValue={setIsPublic} />
-        <div className="flex justify-between items-center">
-            <button className="button-secondary border-red-500" onClick={onDelete}>Delete</button>
+        <div className="mt-4 flex items-center justify-between">
+            <button className="button-destructive" onClick={onDelete}>Delete</button>
             <div className="flex gap-2">
                 <button className="button-secondary" onClick={onCancel}>Cancel</button>
                 <button className="button-primary" onClick={() => onSave(isPublic)}>Save</button>
@@ -400,13 +400,13 @@ const HierarchyViewer = ({ node }: { node: FSNode }) => {
             return {
                 name: c.name,
                 type: c.type,
-                actions: <div className="flex gap-2 items-center">
+                actions: <div className="flex items-center gap-0.5">
                     {c.type == "file" && <>
-                        <button className={`${iconButtonClass} text-gray-600`} title="Details" aria-label="Details" onClick={() => showFileDetails(`${currentPath.join(`/`)}/${c.name}`)}><Info className="w-5 h-5" /></button>
-                        { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) && <button className={`${iconButtonClass} text-gray-600`} title="Edit" aria-label="Edit" onClick={() => showFileEditor(`${currentPath.join(`/`)}/${c.name}`)}><Pencil className="w-5 h-5" /></button>}
+                        <button className={iconButtonClass} title="Details" aria-label="Details" onClick={() => showFileDetails(`${currentPath.join(`/`)}/${c.name}`)}><Info className="size-4.5" /></button>
+                        { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) && <button className={iconButtonClass} title="Edit" aria-label="Edit" onClick={() => showFileEditor(`${currentPath.join(`/`)}/${c.name}`)}><Pencil className="size-4.5" /></button>}
                     </> || <>
-                        <button className={`${iconButtonClass} text-gray-600`} title="Open" aria-label="Open" onClick={() => openDirectory(`${currentPath.join(`/`)}/${c.name}`)}><FolderOpen className="w-5 h-5" /></button>
-                        { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) && <button className={`${iconButtonClass} text-red-500`} title="Delete" aria-label="Delete" onClick={() => deleteFileOrDirectory(`${currentPath.join(`/`)}/${c.name}`)}><Trash2 className="w-5 h-5" /></button>}
+                        <button className={iconButtonClass} title="Open" aria-label="Open" onClick={() => openDirectory(`${currentPath.join(`/`)}/${c.name}`)}><FolderOpen className="size-4.5" /></button>
+                        { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) && <button className={`${iconButtonClass} not-disabled:hover:bg-danger/8 not-disabled:hover:text-danger`} title="Delete" aria-label="Delete" onClick={() => deleteFileOrDirectory(`${currentPath.join(`/`)}/${c.name}`)}><Trash2 className="size-4.5" /></button>}
                     </>}
                 </div>
             }
@@ -415,27 +415,22 @@ const HierarchyViewer = ({ node }: { node: FSNode }) => {
 
     return <>
         <div className="w-full flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-                <div className="flex gap-2 items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <nav aria-label="Path" className="flex min-w-0 flex-wrap items-center gap-0.5">
                     { ["root", ...(currentPath.slice(1))].map((segment, index) => {
-                        return <button key={index} className="flex gap-2 items-center enabled:hover:underline enabled:hover:bg-gray-100 px-2 py-1 rounded-md" onClick={() => setCurrentPath(currentPath.slice(0, index + 1))} disabled={index == currentPath.length - 1}>
-                            <Folder className="w-4 h-4 text-gray-600" />
-                            <span className="text-sm text-gray-600">{segment}</span>
-                            {index < currentPath.length - 1 && <ChevronRight className="w-4 h-4 text-gray-600" />}
+                        return <button key={index} className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-meta transition-colors not-disabled:cursor-pointer not-disabled:text-legend not-disabled:hover:bg-surface not-disabled:hover:text-ink ${index == currentPath.length - 1 ? "font-medium text-ink" : ""}`} onClick={() => setCurrentPath(currentPath.slice(0, index + 1))} disabled={index == currentPath.length - 1}>
+                            <Folder className="size-4" />
+                            <span>{segment}</span>
                         </button>
-                    }) }
-                </div>
+                    }).flatMap((crumb, index) => index == 0 ? [crumb] : [<ChevronRight key={`sep-${index}`} className="size-3.5 text-legend/60" />, crumb]) }
+                </nav>
                 { localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) &&
-                <div className="flex gap-2 items-center mt-2">
-                    <button className="button-primary" onClick={requestUploadFiles}>
-                        <div className="py-1 px-1 flex gap-2 items-center">
-                            <FileUp /><span>Upload File</span>
-                        </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    <button className="button-secondary" onClick={requestCreateDirectory}>
+                        <FolderPlus className="size-4" /><span>New Folder</span>
                     </button>
-                    <button className="button-primary" onClick={requestCreateDirectory}>
-                        <div className="py-1 px-1 flex gap-2 items-center">
-                            <FolderPlus /><span>New Folder</span>
-                        </div>
+                    <button className="button-primary" onClick={requestUploadFiles}>
+                        <FileUp className="size-4" /><span>Upload</span>
                     </button>
                 </div>}
             </div>
@@ -449,7 +444,11 @@ const HierarchyViewer = ({ node }: { node: FSNode }) => {
                 data={contents}
             />}
             { (currentNode.children?.length == 0) && <>
-                <span>No data in this directory. Create some to get started.</span>
+                <div className="card flex flex-col items-center py-16 text-center">
+                    <span className="mb-4 grid size-12 place-items-center rounded-xl bg-bg text-legend"><Folder className="size-5" /></span>
+                    <p className="text-body font-medium">This folder is empty</p>
+                    <p className="mt-1 text-meta text-legend">Upload files or create a folder to get started.</p>
+                </div>
             </> }
         </div>
     </>
@@ -493,9 +492,9 @@ const FilesystemController = () => {
     }, [navigate, registryId, registryLoading, setBanner])
 
     return <>
-        <PageHeader title={registry?.name ?? "Filesystem Registry"} />
+        <PageHeader eyebrow="Files" title={registry?.name ?? "Filesystem Registry"} />
         <div className="flex items-center justify-center">
-            { (registryLoading == RegistryLoadingState.LOADED && !dataLoading && registryData == null) && <span>There is no data to show.</span> }
+            { (registryLoading == RegistryLoadingState.LOADED && !dataLoading && registryData == null) && <span className="text-legend">There is no data to show.</span> }
             { (registryLoading == RegistryLoadingState.LOADED && !dataLoading && registryData != null) && <HierarchyViewer node={registryData} /> }
         </div>
     </>

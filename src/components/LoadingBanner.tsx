@@ -48,11 +48,11 @@ const LoadingBanner = () => {
     if (!mounted) return null;
 
     return (
-        <div className={`fixed inset-0 bg-black/50 z-50 flex items-center justify-center transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3">
-                <LoaderCircle className="w-8 h-8 animate-spin text-primary" />
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-bg/40 backdrop-blur-sm transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`} role="status" aria-live="polite">
+            <div className="flex min-w-40 flex-col items-center gap-3 rounded-3xl bg-bg/90 px-8 py-7 shadow-[0_8px_40px_rgb(0_0_0/0.12)] ring-1 ring-rule/50 backdrop-blur-xl">
+                <LoaderCircle className="size-7 animate-spin text-legend" />
                 {[...processes.values()].at(-1) && (
-                    <span className="text-sm text-gray-600">{[...processes.values()].at(-1)}</span>
+                    <span className="text-meta text-legend">{[...processes.values()].at(-1)}</span>
                 )}
             </div>
         </div>

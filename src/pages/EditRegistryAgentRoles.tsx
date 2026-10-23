@@ -148,8 +148,8 @@ const EditRegistryAgent = () => {
 
     return <>
         <StandardLayout title="Edit Registry Agent" navbarLevel={NavbarLevel.REGISTRY} >
-            <div className="p-8">
-                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> || <>
+            <div className="page">
+                { registryLoading != RegistryLoadingState.LOADED && <p className="card text-center text-meta text-legend">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry…" : "Failed to load registry."}</p> || <>
                     <CreationForm title="Edit Registry Agent" onSubmit={handleSubmit} buttonText="Update Agent" buttonLoadingText="Updating..." loading={processes.has("updating_agent")} fields={formFields} formDisabled={processes.has("fetching_agent")} />
                 </>}
             </div>

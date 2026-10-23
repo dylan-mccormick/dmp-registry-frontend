@@ -99,16 +99,16 @@ const AgentActions = ({ agent }: { agent: Omit<AgentSchema, "actions"> }) => {
 
     if (!localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS)) {
         return <div className="flex flex-row gap-2 items-center" >
-            <button className="button button-secondary" disabled>Edit</button>
-            <button className="button button-secondary" disabled>Refresh Key</button>
-            <button className="button button-secondary border-red-500" disabled>Delete</button>
+            <button className="button-secondary" disabled>Edit</button>
+            <button className="button-secondary" disabled>Refresh Key</button>
+            <button className="button-destructive" disabled>Delete</button>
         </div>
     }
 
     return <div className="flex flex-row gap-2 items-center" >
-        <button className="button button-secondary" onClick={handleEditRoles} >Edit</button>
-        <button className="button button-secondary" onClick={handleRefreshKey} >Refresh Key</button>
-        <button className="button button-secondary border-red-500" onClick={handleDelete}>Delete</button>
+        <button className="button-secondary" onClick={handleEditRoles} >Edit</button>
+        <button className="button-secondary" onClick={handleRefreshKey} >Refresh Key</button>
+        <button className="button-destructive" onClick={handleDelete}>Delete</button>
     </div>
 }
 
@@ -153,11 +153,11 @@ const RegistryAgentManagement = () => {
 
     return <>
         <StandardLayout title="Agent Management" navbarLevel={NavbarLevel.REGISTRY} >
-            <div className="p-8">
-                <PageHeader title="Registry Agent Management" buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS) ? "Create New Agent" : undefined} buttonAction={() => navigate(`/registries/${registryId}/agents/new`)} />
+            <div className="page">
+                <PageHeader title="API Agents" subtitle="Scoped keys that let services read and write this registry." buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_AGENTS) ? "Create New Agent" : undefined} buttonAction={() => navigate(`/registries/${registryId}/agents/new`)} />
 
-                { processes.has("loading_agents") && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Loading agents..."}</p> || (agents.length === 0 && <p className="text-center">No agents found.</p> ||
-                    <div className="mt-4 mb-8" >
+                { processes.has("loading_agents") && <p className="card text-center text-meta text-legend">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry…" : "Loading agents…"}</p> || (agents.length === 0 && <p className="card text-center text-meta text-legend">No agents found.</p> ||
+                    <div>
                         <HTMLTable<AgentSchema> columns={columns} data={agents} />
                     </div>
                 ) }

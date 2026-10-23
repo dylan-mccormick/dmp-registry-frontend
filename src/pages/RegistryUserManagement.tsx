@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
+import PageHeader from "../components/PageHeader";
 import StandardLayout from "../components/StandardLayout";
 import { BannerContext } from "../context/BannerContext";
 import { ModalContext } from "../context/ModalContext";
@@ -66,17 +67,17 @@ const AddUserResultCard = ({ id, username, refreshSearchResults, setRefreshKey }
     }
 
     return <>
-        <div className="flex py-1 flex-row justify-between items-center">
-            <div>{username}</div>
-            <button className="button-secondary" onClick={onClickAdd}>Add</button>
+        <div className="flex flex-row items-center justify-between gap-4 px-5 py-3">
+            <div className="flex min-w-0 items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-bg text-xs font-semibold uppercase text-legend">{username.charAt(0)}</span><span className="truncate text-body">{username}</span></div>
+            <button type="button" className="button-tertiary" onClick={onClickAdd}>Add</button>
         </div>
     </>
 }
 
-const RoleSelector = ({ label, value, setValue, disabled }: { label: string, value: boolean, setValue: Dispatch<SetStateAction<boolean>>, disabled: boolean }) => <div className="grid grid-cols-2 items-center py-1 gap-4">
-    <span className="text-right">{label}</span>
-    <input type="checkbox" checked={value} onChange={() => setValue(v => !v)} disabled={disabled} className="justify-self-start"></input>
-</div>
+const RoleSelector = ({ label, value, setValue, disabled }: { label: string, value: boolean, setValue: Dispatch<SetStateAction<boolean>>, disabled: boolean }) => <label className="flex cursor-pointer items-center justify-between gap-4 py-2.5">
+    <span className="text-body">{label}</span>
+    <input type="checkbox" checked={value} onChange={() => setValue(v => !v)} disabled={disabled} className="switch"></input>
+</label>
 
 const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCardProps & { setRefreshKey: Dispatch<SetStateAction<number>> }) => {
 
@@ -173,8 +174,8 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
         })
     };
 
-    const dropdownComponent = <div className="border border-gray-400 rounded mb-2 p-4">
-        <div className="flex flex-col">
+    const dropdownComponent = <div className="mx-5 mb-4 rounded-2xl bg-bg px-5 py-3 animate-pop-in">
+        <div className="flex flex-col divide-y divide-rule/60">
             <RoleSelector label="Read Registry" value={true} setValue={() => {}} disabled={true} /> {/* Fake element, all users have this or they will be removed from registry */}
             <RoleSelector label="Write Registry" value={writeRegistry} setValue={setWriteRegistry} disabled={processes.has("saving_roles")} />
             <RoleSelector label="Read Agents" value={readAgents} setValue={setReadAgents} disabled={processes.has("saving_roles")} />
@@ -182,17 +183,17 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
             <RoleSelector label="Manage Users" value={manageUsers} setValue={() => { if (manageUsers) {setManageUsers(false); return} showModal({ title: "Dangerous Role", type: "confirm", message: "This is a dangerous role to grant. Are you sure you want to proceed?", onConfirm: () => { setManageUsers(true) } }) }} disabled={processes.has("saving_roles")} />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-3">
             <button className="button-primary" onClick={onSaveRoles} disabled={processes.has("saving_roles")}>Save</button>
         </div>
     </div>
 
     return <div>
-        <div className="flex flex-row items-center justify-between py-2">
-            <span>{username}</span>
-            <div className="flex flex-row items-center justify-between space">
-                <button className="mr-1 button-secondary" onClick={onEditUser}>{ dropdownOpen ? "Hide" : "Edit" }</button>
-                <button className="ml-1 button-secondary border-red-500" onClick={onDeleteUser}>Delete</button>
+        <div className="flex flex-row items-center justify-between gap-4 px-5 py-3">
+            <div className="flex min-w-0 items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-bg text-xs font-semibold uppercase text-legend">{username.charAt(0)}</span><span className="truncate text-body">{username}</span></div>
+            <div className="flex shrink-0 flex-row items-center gap-2">
+                <button className="button-tertiary" onClick={onEditUser}>{ dropdownOpen ? "Hide" : "Edit" }</button>
+                <button className="button-destructive" onClick={onDeleteUser}>Delete</button>
             </div>
         </div>
         {dropdownOpen && dropdownComponent}
@@ -239,20 +240,21 @@ const AddUsersPanel = ({ setRefreshKey }: { setRefreshKey: Dispatch<SetStateActi
     }
 
     return <>
-        <div className="mx-8 mb-2 p-2 border rounded">
-            <span className="text-xl font-bold">Add Users</span>
+        <section className="mb-10">
+            <h2 className="mb-1 px-1 text-body font-semibold">Add users</h2>
+            <p className="mb-3 px-1 text-meta text-legend">Search by username to give someone access to this registry.</p>
             <form onSubmit={searchUsers}>
-                <div className="flex flex-row gap-2 py-2">
-                    <input name="username" placeholder="Enter username..." type="text" className="w-full border rounded h-8 px-2 border-gray-400" disabled={processes.has("searching_users")}></input>
-                    <button className="button-primary" type="submit" disabled={processes.has("searching_users")}>Search</button>
+                <div className="flex flex-row gap-2">
+                    <input name="username" placeholder="Username" type="search" className="field" disabled={processes.has("searching_users")}></input>
+                    <button className="button-primary min-h-11 px-5" type="submit" disabled={processes.has("searching_users")}>Search</button>
                 </div>
 
-                <div className="my-1 px-4 flex flex-col divide-y divide-gray-400">
-                    {searchResults && searchResults.length == 0 && <span className="text-center">No results found.</span>}
+                <div className="mt-3 flex flex-col divide-y divide-rule/60 overflow-hidden rounded-2xl bg-surface empty:hidden">
+                    {searchResults && searchResults.length == 0 && <span className="px-5 py-4 text-center text-meta text-legend">No results found.</span>}
                     {searchResults && searchResults.map(sr => <AddUserResultCard key={sr.id} id={sr.id} username={sr.username} refreshSearchResults={setSearchResults} setRefreshKey={setRefreshKey} ></AddUserResultCard>)}
                 </div>
             </form>
-        </div>
+        </section>
     </>
 }
 
@@ -301,12 +303,12 @@ const CurrentUsersPanel = ({ refreshKey, setRefreshKey }: { refreshKey: number, 
     }, [registryId, addProcess, removeProcess, setBanner, refreshKey]);
 
     return <>
-        <div className="mx-8 p-2 border rounded">
-            <span className="text-xl font-bold mb-2">Current Users</span>
-            <div className="px-4 divide-y divide-gray-400">
+        <section>
+            <h2 className="mb-3 px-1 text-body font-semibold">Current users</h2>
+            <div className="divide-y divide-rule/60 overflow-hidden rounded-2xl bg-surface">
                 {currentUsers.map(u => <RegistryUserCard key={u.id} id={u.id} username={u.username} roles={u.roles} setRefreshKey={setRefreshKey}></RegistryUserCard>)}
             </div>
-        </div>
+        </section>
     </>
 }
 
@@ -316,7 +318,7 @@ const RegistryUserManagement = () => {
     const navigate = useNavigate();
 
     const { registryLoading, registryLoadingError } = useRegistryBootstrap(registryId);
-    const { localUser } = useContext(RegistryContext);
+    const { localUser, registry } = useContext(RegistryContext);
     const { setBanner } = useContext(BannerContext);
 
     const [ refreshKey, setRefreshKey ] = useState(0);
@@ -336,12 +338,12 @@ const RegistryUserManagement = () => {
 
     return <>
         <StandardLayout title="User Management" navbarLevel={NavbarLevel.REGISTRY}>
-            {registryLoading != RegistryLoadingState.LOADED && <div className="text-center mt-8">Loading registry details...</div> ||
-            <div className="p-8">
-                <span className="text-3xl font-bold">Registry User Management</span>
-            </div>}
+            <div className="page">
+                {registryLoading != RegistryLoadingState.LOADED && <div className="text-center text-legend">Loading registry details…</div> ||
+                <PageHeader eyebrow={registry?.name} title="Users" subtitle="Control who can read, write and administer this registry." />}
 
-            {localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS) && (<><AddUsersPanel setRefreshKey={setRefreshKey} /> <CurrentUsersPanel refreshKey={refreshKey} setRefreshKey={setRefreshKey} /></>)}
+                {localUser?.permissions?.includes(RegistryUserPermissions.MANAGE_USERS) && (<div className="max-w-3xl"><AddUsersPanel setRefreshKey={setRefreshKey} /> <CurrentUsersPanel refreshKey={refreshKey} setRefreshKey={setRefreshKey} /></div>)}
+            </div>
         </StandardLayout>
     </>
 }

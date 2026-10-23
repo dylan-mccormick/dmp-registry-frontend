@@ -1,6 +1,8 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../apiClient";
+import PageHeader from "../components/PageHeader";
+import { SettingsActions, SettingsGroup, SettingsRow } from "../components/SettingsGroup";
 import StandardLayout from "../components/StandardLayout";
 import { BannerContext } from "../context/BannerContext";
 import { LoadingBannerContext } from "../context/LoadingBannerContext";
@@ -196,35 +198,34 @@ const Account = () => {
     return <>
 
     <StandardLayout navbarLevel={NavbarLevel.TOP} title="Account Settings">
-        <div className="p-8" >
-            <h1 className="text-3xl font-bold mb-16" >Account Settings</h1>
-            <div className="flex flex-col items-center" >
-                <form onSubmit={handleSubmit} className="mt-4 w-full sm:w-lg">
-                    <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 items-center">
-                        <label htmlFor="username" className="text-right">Username</label>
-                        <input type="text" id="username" name="username" maxLength={255} className="px-3 py-2 border rounded" defaultValue={user?.username} required />
-
-                        <label htmlFor="email" className="text-right">Email</label>
-                        <input type="email" id="email" name="email" maxLength={255} className="px-3 py-2 border rounded" defaultValue={user?.email} required />
-
-
-                        <div /> {/* empty cell */}<div /> {/* empty cell */}
-                        <div /> {/* empty cell */}
-                        <button type="submit" className="button-primary" disabled={processes.has("updating_account")}>
-                            Save Changes
-                        </button>
-                        <div /> {/* empty cell to push button into second column */}
-                        <button type="button" className="button-secondary" disabled={processes.has("changing_password")} onClick={handleChangePassword}>
+        <div className="page">
+            <PageHeader eyebrow="Account" title="Settings" subtitle="Manage your profile and sign-in details." />
+            <form onSubmit={handleSubmit} className="max-w-3xl">
+                <SettingsGroup title="Profile">
+                    <SettingsRow label="Username" htmlFor="username">
+                        <input type="text" id="username" name="username" maxLength={255} autoComplete="username" className="field" defaultValue={user?.username} required />
+                    </SettingsRow>
+                    <SettingsRow label="Email" htmlFor="email">
+                        <input type="email" id="email" name="email" maxLength={255} autoComplete="email" className="field" defaultValue={user?.email} required />
+                    </SettingsRow>
+                </SettingsGroup>
+                <SettingsGroup title="Security">
+                    <SettingsRow label="Password" hint="Choose a new password for signing in.">
+                        <button type="button" className="button-link text-body" disabled={processes.has("changing_password")} onClick={handleChangePassword}>
                             Change Password
                         </button>
-                        <div /> {/* empty cell */}
-                        <button type="button" className="button-secondary border-red-500" disabled={processes.has("deleting_account")} onClick={handleDeleteAccount}>
-                            Delete Account
-                        </button>
-                    </div>
-                </form>
-
-            </div>
+                    </SettingsRow>
+                </SettingsGroup>
+                <SettingsActions destructive={
+                    <button type="button" className="button-destructive" disabled={processes.has("deleting_account")} onClick={handleDeleteAccount}>
+                        Delete Account
+                    </button>
+                }>
+                    <button type="submit" className="button-primary" disabled={processes.has("updating_account")}>
+                        Save Changes
+                    </button>
+                </SettingsActions>
+            </form>
         </div>
     </StandardLayout>
     </>

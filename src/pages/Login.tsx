@@ -61,29 +61,33 @@ const Login = () => {
     <title>Login</title>
 
         <StandardLayout title="Login">
-            <main className="text-center flex-1 p-4 overflow-y-auto">
-                <h1 className="text-2xl font-bold mb-4 mt-16">Login</h1>
-                <p>Please enter your credentials to log in.</p>
-                <form className="mt-4 max-w-sm mx-auto" onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="username" className="block text-left mb-2">Username</label>
-                        <input type="text" id="username" name="username" className="w-full px-3 py-2 border rounded" required value={username} onChange={(e) => setUsername(e.target.value)} />
+            <div className="mx-auto w-full max-w-md px-4 pt-16 pb-24 sm:pt-24">
+                <div className="mb-10 text-center">
+                    <img src="https://cdn.mnmzc.dev/logos/dmp-black.png" alt="" className="mx-auto mb-6 size-14" />
+                    <h1 className="text-h2 font-semibold">Sign in</h1>
+                    <p className="mt-3 text-body text-legend">Use your DMP Registry account.</p>
+                </div>
+                <form className="card sm:p-8" onSubmit={handleSubmit}>
+                    <div className="mb-5">
+                        <label htmlFor="username" className="label">Username</label>
+                        <input type="text" id="username" name="username" autoComplete="username" className="field" required value={username} onChange={(e) => setUsername(e.target.value)} />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block text-left mb-2">Password</label>
-                        <input type="password" id="password" name="password" className="w-full px-3 py-2 border rounded" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <div className="mb-6">
+                        <label htmlFor="password" className="label">Password</label>
+                        <input type="password" id="password" name="password" autoComplete="current-password" className="field" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
-                    <button type="submit" className="button-primary w-full" disabled={processes.has("login_process")}>
-                        {processes.has("login_process") ? "Logging in..." : "Log In"}
+                    <button type="submit" className="button-primary min-h-11 w-full text-body" disabled={processes.has("login_process")}>
+                        {processes.has("login_process") ? "Signing in…" : "Sign in"}
                     </button>
-                    <button type="button" className="button-secondary mt-2 w-full" disabled={processes.has("login_process")} onClick={() => navigate("/register")}>
-                        Don't have an account? Register
-                    </button>
-                    <button type="button" className="button-link mt-2 w-full" onClick={() => navigate("/forgot-password")}>
-                        Forgot Password?
+                    <button type="button" className="button-link mt-4 w-full text-meta" onClick={() => navigate("/forgot-password")}>
+                        Forgot password?
                     </button>
                 </form>
-            </main>
+                <p className="mt-8 text-center text-meta text-legend">
+                    Don't have an account?{" "}
+                    <button type="button" className="button-link" disabled={processes.has("login_process")} onClick={() => navigate("/register")}>Create one</button>
+                </p>
+            </div>
         </StandardLayout>
 
     </>

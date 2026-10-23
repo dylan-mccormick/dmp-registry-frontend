@@ -153,7 +153,7 @@ const KeyValueController = () => {
             }
 
             const data = await res.json();
-            setData(data.map((d: { id: number; key: string; type: string; value: string }) => ({ id: d.id, key: d.key, type: d.type, value: d.value, actions: <div className="flex flex-row gap-2 items-center"><button className="button button-secondary" onClick={() => handleEdit(d.id)}>Edit</button><button className="button button-secondary border-red-500" onClick={() => deletePair(d.id)}>Delete</button></div> })));
+            setData(data.map((d: { id: number; key: string; type: string; value: string }) => ({ id: d.id, key: d.key, type: d.type, value: d.value, actions: <div className="flex flex-row gap-2 items-center"><button className="button-secondary" onClick={() => handleEdit(d.id)}>Edit</button><button className="button-destructive" onClick={() => deletePair(d.id)}>Delete</button></div> })));
         }).catch(err => {
             console.error(`Failed to load key-value pairs.`, err);
             setBanner({ level: "error", message: `Unable to load current data in registry.`});
@@ -162,8 +162,8 @@ const KeyValueController = () => {
     }, [ refreshData ]);
 
     return <>
-        <PageHeader title={registry?.name || "Key-Value Registry"} buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) ? "Create Key-Value Pair" : undefined} buttonAction={handleCreate} />
-        { loading && <p className="text-center">{registryLoading ? "Loading registry..." : "Loading key-value pairs..."}</p> || data.length === 0 && <p className="text-center">No key-value pairs found.</p> }
+        <PageHeader eyebrow="Key-Value" title={registry?.name || "Key-Value Registry"} buttonText={localUser?.permissions?.includes(RegistryUserPermissions.WRITE_REGISTRY) ? "Create Key-Value Pair" : undefined} buttonAction={handleCreate} />
+        { loading && <p className="card text-center text-meta text-legend">{registryLoading ? "Loading registry…" : "Loading key-value pairs..."}</p> || data.length === 0 && <p className="card text-center text-meta text-legend">No key-value pairs found.</p> }
         { !loading && data.length > 0 && <HTMLTable<{ id: number; key: string; type: string; value: string | number | boolean | Date; actions: React.ReactNode }> columns={columns} data={data} /> }
     </>;
 

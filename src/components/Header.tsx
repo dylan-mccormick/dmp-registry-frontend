@@ -1,4 +1,4 @@
-import { CircleUserRound, Menu } from "lucide-react";
+import { LogOut, Menu, PanelLeft } from "lucide-react";
 import { NavContext } from "../context/NavContext";
 import { useContext } from "react";
 import { Link, useNavigate } from "react-router";
@@ -32,44 +32,58 @@ const LogoutComponent = (props: HeaderProps) => {
             });
     }
 
-return <><div className="flex-col items-center">
-    <div className="w-full flex">
-        <CircleUserRound />
-        <p className="ml-4">{props.loggedInUser}</p>
-    </div>
-    <button className="button-link w-full text-right" onClick={logoutUser}>Log Out</button>
-</div></>;
-
+    return <div className="flex items-center gap-1">
+        <Link to="/profile" className="flex items-center gap-2.5 rounded-full py-1 pr-3 pl-1 transition-colors hover:bg-surface">
+            <span className="grid size-7 place-items-center rounded-full bg-ink text-xs font-semibold text-snow uppercase">
+                {props.loggedInUser?.charAt(0)}
+            </span>
+            <span className="hidden text-meta font-medium sm:inline">{props.loggedInUser}</span>
+        </Link>
+        <button className="button-icon" onClick={logoutUser} title="Log out" aria-label="Log out">
+            <LogOut className="size-4" />
+        </button>
+    </div>;
 }
 
-const LoginComponent = () => <>
-    <Link className="button-link" to="/login">Log In</Link>
-</>
+const LoginComponent = () => <div className="flex items-center gap-2">
+    <Link className="hidden text-meta text-legend transition-colors hover:text-ink sm:inline" to="/register">Create account</Link>
+    <Link className="button-primary min-h-8 px-3.5 text-xs" to="/login">Sign in</Link>
+</div>
 
 const Header = (props: HeaderProps) => {
     const { setNavOpen, navOpen } = useContext(NavContext);
 
     return (
-<div className="w-full h-16 border-b border-gray-300 flex items-center justify-between px-4">
+        <header className="sticky top-0 z-30 w-full border-b border-rule/60 bg-bg/80 backdrop-blur-xl backdrop-saturate-150">
+            <div className="flex h-14 items-center justify-between gap-4 px-3 sm:px-5">
 
-    <link rel="icon" type="image/x-icon" href="https://cdn.mnmzc.dev/logos/dmp.png" />
+                {/* Left */}
+                <div className="flex items-center gap-1">
+                    {!props.hideNavbar && (
+                        <button
+                            className="button-icon"
+                            onClick={() => setNavOpen(!navOpen)}
+                            title={navOpen ? "Hide sidebar" : "Show sidebar"}
+                            aria-label={navOpen ? "Hide sidebar" : "Show sidebar"}
+                            aria-expanded={navOpen}
+                        >
+                            <PanelLeft className="hidden size-4.5 sm:block" />
+                            <Menu className="size-4.5 sm:hidden" />
+                        </button>
+                    )}
+                    <Link className="flex items-center gap-2 rounded-full py-1 pr-2 pl-1.5" to="/">
+                        <img className="size-7" alt="" src="https://cdn.mnmzc.dev/logos/dmp-black.png" />
+                        <span className="text-body font-semibold tracking-tight whitespace-nowrap">
+                            DMP <span className="text-legend">Registry</span>
+                        </span>
+                    </Link>
+                </div>
 
-    {/* Left */}
-    <div className="flex items-center h-16" >
-        <button className={`button-link text-black ${props.hideNavbar ? 'hidden' : ''}`}><Menu className="mr-2" onClick={ () => setNavOpen(!navOpen) } /></button>
-        <Link className="button-link no-underline flex items-center h-16" to="/">
-            <img className="h-full ml-2 mr-2 py-2" alt="DMP Service Logo" src="https://cdn.mnmzc.dev/logos/dmp-black.png"></img>
-            <h3 className="text-lg ml-2 mr-2 hover:text-black active:text-black text-black">Registry</h3>
-        </Link>
-    </div>
+                {/* Right */}
+                {props.loggedInUser ? <LogoutComponent loggedInUser={props.loggedInUser} /> : <LoginComponent />}
 
-    {/* Right */}
-    <div className="flex items-center gap-2 h-16">
-        {props.loggedInUser ? <LogoutComponent loggedInUser={props.loggedInUser} /> : <LoginComponent />}
-    </div>
-
-</div>
-
+            </div>
+        </header>
     )}
 
 export default Header;

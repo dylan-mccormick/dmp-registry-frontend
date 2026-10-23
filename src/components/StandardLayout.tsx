@@ -62,24 +62,24 @@ const StandardLayout = ({ children, title, navItems, navbarLevel }: StandardLayo
 
     return (
         <>
-            <div className="flex flex-col h-screen overflow-hidden">
+            <div className="flex h-screen flex-col overflow-hidden bg-bg">
                 <Header loggedInUser={user?.username || ""} hideNavbar={(renderedNavItems || []).length == 0} />
                 <div className="flex flex-1 overflow-hidden">
                     {(renderedNavItems || []).length > 0 && <Navbar navItems={renderedNavItems || []} />}
 
                     {/* Backdrop */}
-                    {navOpen && (
+                    {navOpen && (renderedNavItems || []).length > 0 && (
                         <div
-                            className="fixed inset-0 bg-black/50 sm:hidden z-10"
+                            className="fixed inset-0 top-14 z-10 bg-ink/20 backdrop-blur-[2px] animate-fade-in sm:hidden"
                             onClick={() => setNavOpen(false)}
                         />
                     )}
 
-                    <div className={`flex-1 overflow-y-auto ${navOpen ? 'hidden sm:block' : ''}`}>
-                        {<Banner></Banner>}
+                    <main className="flex-1 overflow-y-auto">
+                        <Banner />
 
                         {children}
-                    </div>
+                    </main>
                 </div>
             </div>
         </>

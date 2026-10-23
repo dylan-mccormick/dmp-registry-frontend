@@ -59,7 +59,7 @@ const CreateRegistry = () => {
 
     return <>
         <StandardLayout title="Create Registry" navbarLevel={NavbarLevel.TOP} >
-            <div className="p-8" >
+            <div className="page">
                 <CreationForm title="Create New Registry" buttonText="Create Registry" buttonLoadingText="Creating..." fields={fields} onSubmit={handleSubmit} loading={processes.has("creating_registry")} />
             </div>
         </StandardLayout>

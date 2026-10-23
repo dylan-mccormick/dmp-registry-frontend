@@ -79,32 +79,39 @@ const Register = () => {
     }
 
     return <StandardLayout title="Register">
-        <main className="text-center flex-1 p-4 overflow-y-auto">
-            <h1 className="text-2xl font-bold mb-4 mt-16">Register</h1>
-            <p>Please enter your details to create an account.</p>
-            <form className="mt-4 max-w-sm mx-auto" onSubmit={handleSubmit}>
-                <div className="mb-4">
-                    <label htmlFor="username" className="block text-left mb-2">Username</label>
-                    <input type="text" id="username" name="username" maxLength={255} className="w-full px-3 py-2 border rounded" onChange={e => setUsername(e.target.value)} required />
+        <div className="mx-auto w-full max-w-md px-4 pt-16 pb-24 sm:pt-24">
+            <div className="mb-10 text-center">
+                <img src="https://cdn.mnmzc.dev/logos/dmp-black.png" alt="" className="mx-auto mb-6 size-14" />
+                <h1 className="text-h2 font-semibold">Create your account</h1>
+                <p className="mt-3 text-body text-legend">One account for every registry you're part of.</p>
+            </div>
+            <form className="card sm:p-8" onSubmit={handleSubmit}>
+                <div className="mb-5">
+                    <label htmlFor="username" className="label">Username</label>
+                    <input type="text" id="username" name="username" maxLength={255} autoComplete="username" className="field" onChange={e => setUsername(e.target.value)} required />
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="email" className="block text-left mb-2" >Email</label>
-                    <input type="email" id="email" name="email" maxLength={255} className="w-full px-3 py-2 border rounded" onChange={e => setEmail(e.target.value)} required />
+                <div className="mb-5">
+                    <label htmlFor="email" className="label">Email</label>
+                    <input type="email" id="email" name="email" maxLength={255} autoComplete="email" className="field" onChange={e => setEmail(e.target.value)} required />
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="password" className="block text-left mb-2">Password</label>
-                    <input type="password" id="password" name="password" maxLength={255} className="w-full px-3 py-2 border rounded" onChange={e => setPassword(e.target.value)} required />
+                <div className="mb-5">
+                    <label htmlFor="password" className="label">Password</label>
+                    <input type="password" id="password" name="password" maxLength={255} autoComplete="new-password" className="field" onChange={e => setPassword(e.target.value)} required />
+                    <p className="mt-1.5 text-xs text-legend">At least 8 characters with upper and lowercase letters, a number and a symbol.</p>
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="confirm-password" className="block text-left mb-2">Confirm Password</label>
-                    <input type="password" id="confirm-password" name="confirm-password" maxLength={255} className="w-full px-3 py-2 border rounded" onChange={e => setConfirmPassword(e.target.value)} required />
+                <div className="mb-6">
+                    <label htmlFor="confirm-password" className="label">Confirm password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" maxLength={255} autoComplete="new-password" className="field" onChange={e => setConfirmPassword(e.target.value)} required />
                 </div>
-                <button type="submit" className="button-primary w-full" disabled={processes.has("register_process")}>
-                    {processes.has("register_process") ? "Registering..." : "Register"}
+                <button type="submit" className="button-primary min-h-11 w-full text-body" disabled={processes.has("register_process")}>
+                    {processes.has("register_process") ? "Creating account…" : "Create account"}
                 </button>
-                <button type="button" className="button-secondary mt-2 w-full" onClick={() => navigate("/login")} disabled={processes.has("register_process")}>Already have an account? Log In</button>
             </form>
-        </main>
+            <p className="mt-8 text-center text-meta text-legend">
+                Already have an account?{" "}
+                <button type="button" className="button-link" onClick={() => navigate("/login")} disabled={processes.has("register_process")}>Sign in</button>
+            </p>
+        </div>
     </StandardLayout>
 
 }
