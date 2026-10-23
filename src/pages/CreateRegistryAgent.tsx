@@ -99,9 +99,9 @@ const CreateRegistryAgent = () => {
 
     return <>
         <StandardLayout title="Create Registry Agent" navbarLevel={NavbarLevel.REGISTRY} >
-            <div className="p-8">
+            <div className="page">
 
-                { registryLoading != RegistryLoadingState.LOADED && <p className="text-center">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry..." : "Failed to load registry."}</p> || <>
+                { registryLoading != RegistryLoadingState.LOADED && <p className="card text-center text-meta text-legend">{registryLoading == RegistryLoadingState.LOADING ? "Loading registry…" : "Failed to load registry."}</p> || <>
                     <CreationForm
                         title="Create Registry Agent"
                         onSubmit={handleSubmit}

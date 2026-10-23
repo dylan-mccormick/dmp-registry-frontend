@@ -3,6 +3,8 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
 import type { NavbarComponentProps } from "../components/NavbarComponent";
+import PageHeader from "../components/PageHeader";
+import { SettingsActions, SettingsGroup, SettingsRow } from "../components/SettingsGroup";
 import StandardLayout from "../components/StandardLayout";
 import { BannerContext } from "../context/BannerContext";
 import { ModalContext } from "../context/ModalContext";
@@ -12,7 +14,7 @@ import { LoadingBannerContext } from "../context/LoadingBannerContext";
 type Tab = 'registries' | 'roles' | 'profile';
 
 const RegistriesPanel = () => {
-    return <div>Registries panel</div>
+    return <div className="card text-center text-meta text-legend">Registry memberships will appear here.</div>
 }
 
 const RolesPanel = ( { targetUserId }: { targetUserId: string } ) => {
@@ -77,22 +79,19 @@ const RolesPanel = ( { targetUserId }: { targetUserId: string } ) => {
     };
 
     return <>
-        <div className="p-8 flex flex-col items-center" >
-            <form className="mt-4 w-full sm:w-lg" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 items-center">
-                    <label htmlFor="createRegistries" className="text-right">Create Registries</label>
-                    <input type="checkbox" id="createRegistries" name="createRegistries" checked={create_registry} onChange={(e) => setCreateRegistry(e.target.checked)} className="h-5 w-5 border-gray-300 rounded" />
-
-                    <label htmlFor="manageUsers" className="text-right">Manage Users</label>
-                    <input type="checkbox" id="manageUsers" name="manageUsers" checked={manage_users} onChange={(e) => setManageUsers(e.target.checked)} className="h-5 w-5 border-gray-300 rounded" />
-
-                    <div /> {/* empty cell */}<div /> {/* empty cell */}
-                    <div /> {/* empty cell */}
-
-                    <button type="submit" className="button-primary" disabled={processes.has("updating_user_roles")}>Save Changes</button>
-                </div>
-            </form>
-        </div>
+        <form className="max-w-3xl" onSubmit={handleSubmit}>
+            <SettingsGroup title="Global permissions" description="These apply across the whole DMP Registry, not to a single registry.">
+                <SettingsRow label="Create registries" htmlFor="createRegistries">
+                    <input type="checkbox" id="createRegistries" name="createRegistries" checked={create_registry} onChange={(e) => setCreateRegistry(e.target.checked)} className="switch" />
+                </SettingsRow>
+                <SettingsRow label="Manage users" htmlFor="manageUsers">
+                    <input type="checkbox" id="manageUsers" name="manageUsers" checked={manage_users} onChange={(e) => setManageUsers(e.target.checked)} className="switch" />
+                </SettingsRow>
+            </SettingsGroup>
+            <SettingsActions>
+                <button type="submit" className="button-primary" disabled={processes.has("updating_user_roles")}>Save Changes</button>
+            </SettingsActions>
+        </form>
     </>
 }
 
@@ -166,38 +165,33 @@ const ProfilePanel = ({ userId, username, email, emailVerified, createdAt, token
     };
 
     return <>
-        <div className="p-8 flex flex-col items-center" >
-            <form className="mt-4 w-full sm:w-lg" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 items-center">
-                    <label htmlFor="userId" className="text-right">User ID</label>
-                    <span id="userId" className="px-3 py-2 border rounded bg-gray-100">{userId}</span>
-
-                    <label htmlFor="username" className="text-right">Username</label>
-                    <input type="text" id="username" name="username" maxLength={255} className="px-3 py-2 border rounded" required defaultValue={username} />
-
-                    <label htmlFor="email" className="text-right">Email</label>
-                    <input type="email" id="email" name="email" maxLength={255} className="px-3 py-2 border rounded" required defaultValue={email} />
-
-                    <label htmlFor="emailVerified" className="text-right">Email Verified</label>
-                    <input type="checkbox" id="emailVerified" name="emailVerified" className="h-5 w-5 border-gray-300 rounded" defaultChecked={emailVerified} />
-
-                    <label htmlFor="createdAt" className="text-right">Created At</label>
-                    <span id="createdAt" className="px-3 py-2 border rounded bg-gray-100">{new Date(createdAt).toLocaleString()}</span>
-
-                    <label htmlFor="tokenVersion" className="text-right">Token Version</label>
-                    <span id="tokenVersion" className="px-3 py-2 border rounded bg-gray-100">{tokenVersion}</span>
-
-                    <div /> {/* empty cell */}<div /> {/* empty cell */}
-                    <div /> {/* empty cell */}
-
-                    <button type="submit" className="button-primary" disabled={processes.has("updating_user")}>Save Changes</button>
-
-                    <div /> {/* empty cell */}
-
-                    <button type="button" className="button-secondary border-red-500" onClick={handleDelete} disabled={processes.has("deleting_user")}>Delete User</button>
-                </div>
-            </form>
-        </div>
+        <form className="max-w-3xl" onSubmit={handleSubmit}>
+            <SettingsGroup title="Profile">
+                <SettingsRow label="Username" htmlFor="username">
+                    <input type="text" id="username" name="username" maxLength={255} className="field" required defaultValue={username} />
+                </SettingsRow>
+                <SettingsRow label="Email" htmlFor="email">
+                    <input type="email" id="email" name="email" maxLength={255} className="field" required defaultValue={email} />
+                </SettingsRow>
+                <SettingsRow label="Email verified" htmlFor="emailVerified">
+                    <input type="checkbox" id="emailVerified" name="emailVerified" className="switch" defaultChecked={emailVerified} />
+                </SettingsRow>
+            </SettingsGroup>
+            <SettingsGroup title="Details">
+                <SettingsRow label="User ID">
+                    <span className="field-static font-mono text-meta">{userId}</span>
+                </SettingsRow>
+                <SettingsRow label="Created">
+                    <span className="field-static">{new Date(createdAt).toLocaleString()}</span>
+                </SettingsRow>
+                <SettingsRow label="Token version">
+                    <span className="field-static">{tokenVersion}</span>
+                </SettingsRow>
+            </SettingsGroup>
+            <SettingsActions destructive={<button type="button" className="button-destructive" onClick={handleDelete} disabled={processes.has("deleting_user")}>Delete User</button>}>
+                <button type="submit" className="button-primary" disabled={processes.has("updating_user")}>Save Changes</button>
+            </SettingsActions>
+        </form>
     </>
 }
 
@@ -256,19 +250,21 @@ const EditUser = () => {
 
     return <>
         <StandardLayout title="Edit User" navItems={navbarItems}>
-            <div className="p-8">
-                <h1 className="text-2xl font-bold mb-4">Edit User {id}</h1>
+            <div className="page">
+                <PageHeader eyebrow="User Management" title={targetUser?.username || `User ${id}`} subtitle={targetUser?.email} />
 
                 {/* Tab Bar */}
-                <div className="flex border-b border-primary mb-6">
+                <div role="tablist" className="mb-8 inline-flex rounded-full bg-surface p-1">
                     {(['registries', 'roles', 'profile'] as Tab[]).map(tab => (
                         <button
                             key={tab}
+                            role="tab"
+                            aria-selected={activeTab === tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`px-4 py-2 capitalize border-b-2 -mb-px transition-colors ${
+                            className={`min-h-8 cursor-pointer rounded-full px-4 text-meta font-medium capitalize transition-all duration-200 ${
                                 activeTab === tab
-                                    ? 'border-primary text-primary font-semibold'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'bg-bg text-ink shadow-[0_1px_3px_rgb(0_0_0/0.1)]'
+                                    : 'text-legend hover:text-ink'
                             }`}
                         >
                             {tab}

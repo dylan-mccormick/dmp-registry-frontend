@@ -18,7 +18,7 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
     return (
         <>
             {text.slice(0, index)}
-            <mark className="bg-yellow-200">{text.slice(index, index + highlight.length)}</mark>
+            <mark className="rounded-sm bg-blue/15 text-ink">{text.slice(index, index + highlight.length)}</mark>
             {text.slice(index + highlight.length)}
         </>
     );
@@ -34,14 +34,15 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
     }, [searchOpen, col.dataKey, setSearchTerm, searchKey]);
 
     return <>
-        <th className="border-y-2 border-x border-gray-300 px-4 py-2 min-w-37.5 sm:min-w-45" key={index}>
+        <th className="min-w-37.5 border-b border-rule/60 bg-surface px-4 py-2.5 text-left text-xs font-semibold text-legend sm:min-w-45" key={index}>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 w-full">
                 <div className={`flex flex-row justify-between items-center sm:flex-1 sm:min-w-0 ${col.queryable !== false ? "sm:max-w-[calc(100%-60px)]" : ""}`}>
                     {searchOpen ? (
                         <input
                             type="text"
-                            className="hidden sm:block border border-gray-300 px-2 py-1 rounded font-normal w-full mr-2 min-w-0"
-                            placeholder="Search..."
+                            autoFocus
+                            className="mr-2 hidden h-7 w-full min-w-0 rounded-lg border border-rule bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:block"
+                            placeholder={`Search ${col.text.toLowerCase()}…`}
                             onChange={(e) => setSearchTerm(col.dataKey, e.target.value.length > 0 ? e.target.value : null)}
                         />
                     ) : (
@@ -51,14 +52,14 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
 
                 {col.queryable !== false && (
                     <div className="flex flex-row items-center shrink-0">
-                        <button className="text-gray-500 hover:text-gray-700" onClick={() => setSearchOpen(!searchOpen)}>
-                            <Search className="w-4 h-4" />
+                        <button className={`button-icon size-7 ${searchOpen ? "bg-bg text-ink" : ""}`} onClick={() => setSearchOpen(!searchOpen)} aria-label={`Search ${col.text}`} title="Search">
+                            <Search className="size-3.5" />
                         </button>
-                        <button className="ml-1 text-gray-500 hover:text-gray-700" onClick={toggleSortBy(col.dataKey)}>
+                        <button className={`button-icon size-7 ${sortKey === col.dataKey ? "text-blue" : ""}`} onClick={toggleSortBy(col.dataKey)} aria-label={`Sort by ${col.text}`} title="Sort">
                             {sortKey === col.dataKey ? (
-                                sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                                sortDirection === "asc" ? <ArrowUp className="size-3.5" /> : <ArrowDown className="size-3.5" />
                             ) : (
-                                <ArrowUpDown className="w-4 h-4" />
+                                <ArrowUpDown className="size-3.5" />
                             )}
                         </button>
                     </div>
@@ -67,8 +68,9 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
                 {searchOpen && (
                     <input
                         type="text"
-                        className="sm:hidden border border-gray-300 px-2 py-1 rounded font-normal w-full"
-                        placeholder="Search..."
+                        className="h-8 w-full rounded-lg border border-rule bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:hidden"
+                        placeholder={`Search ${col.text.toLowerCase()}…`}
+                        onChange={(e) => setSearchTerm(col.dataKey, e.target.value.length > 0 ? e.target.value : null)}
                     />
                 )}
             </div>
@@ -162,9 +164,9 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
         setUnpagedResultCount(sorted.length);
     }, [data, filterKey, filterValue, sortKey, sortDirection, currentPage, itemsPerPage]);
 
-    return <div className="overflow-auto" >
+    return <div className="overflow-auto rounded-2xl ring-1 ring-rule/60" >
 
-        <table className="w-full border-collapse table-fixed">
+        <table className="w-full table-fixed border-separate border-spacing-0">
             <colgroup>
                 {columns.map((col, index) => (
                     <col key={index} style={col.fixedPixelSize ? { width: `${col.fixedPixelSize}px` } : undefined} />
@@ -188,16 +190,16 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
             </thead>
             <tbody>
                 {sortedData.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="hover:bg-gray-100" >
+                    <tr key={rowIndex} className="transition-colors hover:bg-surface/70 [&:not(:first-child)>td]:border-t [&>td]:border-rule/50" >
                         {columns.map((col, colIndex) => {
                             if (isValidElement(row[col.dataKey])) {
                                 const element = row[col.dataKey] as unknown as JSX.Element;
-                                return <td key={colIndex} title={element.props?.title || String(col.dataKey)} className="border border-gray-300 px-4 py-2 text-sm font-normal truncate" >
+                                return <td key={colIndex} title={element.props?.title || String(col.dataKey)} className="px-4 py-2 text-meta font-normal truncate" >
                                     {element}
                                 </td>
                             }
 
-                            return <td key={colIndex} title={String(row[col.dataKey])} className="border border-gray-300 px-4 py-2 text-sm font-normal truncate" >
+                            return <td key={colIndex} title={String(row[col.dataKey])} className="px-4 py-3 text-meta font-normal truncate" >
                                 {col.dataKey === filterKey ? (
                                     <HighlightedText text={String(row[col.dataKey])} highlight={filterValue} />
                                 ) : (
@@ -207,47 +209,54 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
                         })}
                     </tr>
                 ))}
-                <th className="border-y-2 border-x border-gray-300 px-4 py-2 text-left text-sm font-normal" colSpan={columns.length} >
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2" >
-                        <div>
-                            <span>Showing {currentPage * itemsPerPage - itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, unpagedResultCount)} of {unpagedResultCount} results</span>
-                            <div className="flex flex-row items-center gap-2" >
-                                <span>Results per page:</span>
-                                <select className="mx-2 border border-gray-300 rounded" value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} >
-                                    <option value={10}>10</option>
-                                    <option value={25}>25</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
-                                </select>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td className="border-t border-rule/60 bg-surface px-4 py-2.5 text-meta text-legend" colSpan={columns.length} >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" >
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                                <span>{unpagedResultCount === 0 ? "No results" : <>{currentPage * itemsPerPage - itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, unpagedResultCount)} of {unpagedResultCount}</>}</span>
+                                <label className="flex flex-row items-center gap-2" >
+                                    <span>Per page</span>
+                                    <select className="h-7 cursor-pointer rounded-lg border border-rule bg-bg px-1.5 text-meta text-ink" value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} >
+                                        <option value={10}>10</option>
+                                        <option value={25}>25</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div className="flex flex-row items-center gap-1" >
+                                <button
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="button-icon size-7 not-disabled:hover:bg-bg"
+                                    aria-label="Previous page"
+                                >
+                                    <ArrowLeft className="size-4" />
+                                </button>
+                                <input
+                                    type="number"
+                                    aria-label="Page"
+                                    className="h-7 w-12 rounded-lg border border-rule bg-bg text-center text-meta text-ink [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                                    value={pageInput}
+                                    onChange={handlePageInputChange}
+                                    onBlur={commitPageInput}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') commitPageInput(); }}
+                                />
+                                <button
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    disabled={currentPage * itemsPerPage >= unpagedResultCount}
+                                    className="button-icon size-7 not-disabled:hover:bg-bg"
+                                    aria-label="Next page"
+                                >
+                                    <ArrowRight className="size-4" />
+                                </button>
                             </div>
                         </div>
-                        <div className="flex flex-row items-center gap-2" >
-                            <button
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="text-gray-500 enabled:hover:text-gray-700 disabled:text-gray-200"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                            <input
-                                type="number"
-                                className="mx-2 w-12 border border-gray-300 rounded text-center"
-                                value={pageInput}
-                                onChange={handlePageInputChange}
-                                onBlur={commitPageInput}
-                                onKeyDown={(e) => { if (e.key === 'Enter') commitPageInput(); }}
-                            />
-                            <button
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                                disabled={currentPage * itemsPerPage >= unpagedResultCount}
-                                className="text-gray-500 enabled:hover:text-gray-700 disabled:text-gray-200"
-                            >
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                </th>
-            </tbody>
+                    </td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 }

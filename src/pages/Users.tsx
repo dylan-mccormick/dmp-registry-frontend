@@ -2,6 +2,7 @@ import { useContext, useEffect, useState, type JSX } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../apiClient";
 import HTMLTable from "../components/HTMLTable";
+import PageHeader from "../components/PageHeader";
 import StandardLayout from "../components/StandardLayout";
 import { BannerContext } from "../context/BannerContext";
 import { NavbarLevel } from "../context/NavbarLevel";
@@ -44,9 +45,9 @@ const Users = () => {
     return <>
 
     <StandardLayout navbarLevel={NavbarLevel.TOP} title="Users Directory" >
-        <div className="p-8" >
-            <div className="mb-6" >
-                <h1 className="text-3xl font-bold mb-6" >Users Directory</h1>
+        <div className="page" >
+            <div>
+                <PageHeader eyebrow="Administration" title="Users" subtitle="Everyone with an account on this DMP Registry." />
 
                 {!processes.has("fetching_users") && (
                     <HTMLTable<{ id: number; username: string; email: string, actions: JSX.Element }>
@@ -56,7 +57,7 @@ const Users = () => {
                             { text: "Email", dataKey: "email" },
                             { text: "Actions", dataKey: "actions", queryable: false, fixedPixelSize: 200 }
                     ]}
-                    data={users.map(u => ({ ...u, actions: <button className="button button-secondary" onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
+                    data={users.map(u => ({ ...u, actions: <button className="button-secondary" onClick={() => navigate(`/user/${u.id}/edit`)}>Edit</button> }))}
                     />)}
 
                 {/* <div className="flex flex-col w-full">

@@ -31,17 +31,17 @@ interface CreationFormProps {
 }
 
 export const FormField = ({ name, label, labelText, type, maxLength, minLength, options, placeholder, required, warning, stateValue, setStateValue, disabled, defaultChecked }: FormField) => {
-    return <div className="mb-4">
-        { label && <label className="font-medium block mb-2" htmlFor={name}>{label}</label> }
+    return <div className="mb-5">
+        { label && type !== "checkbox" && <label className="label" htmlFor={name}>{label}</label> }
         {type === "select" ? (
-            <select className="w-full px-3 py-2 border rounded" id={name} name={name} required={required} disabled={disabled}>
+            <select className="field" id={name} name={name} required={required} disabled={disabled}>
                 <option value="">Select an option</option>
                 {options?.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
             </select>
         ) : type === "checkbox" ? (
-            <div className="flex items-center">
+            <div className="flex items-center gap-3 py-1">
                 <input
                     type="checkbox"
                     id={name}
@@ -50,31 +50,30 @@ export const FormField = ({ name, label, labelText, type, maxLength, minLength, 
                     defaultChecked={defaultChecked}
                     onChange={(e) =>  setStateValue && setStateValue(e.target.checked)}
                     disabled={disabled}
-                    className="form-checkbox h-5 w-5 text-blue-600 rounded"
                 />
-                <label htmlFor={name} className="ml-2 text-gray-700">
+                <label htmlFor={name} className="flex-1 cursor-pointer text-body">
                     {labelText || label}
                 </label>
             </div>
         ) : type === "textarea" ? (
-            <textarea className="w-full px-3 py-2 border rounded" id={name} name={name} placeholder={placeholder} required={required} maxLength={maxLength} minLength={minLength} defaultValue={stateValue as string} disabled={disabled}></textarea>
+            <textarea className="field min-h-24 py-2.5" id={name} name={name} placeholder={placeholder} required={required} maxLength={maxLength} minLength={minLength} defaultValue={stateValue as string} disabled={disabled}></textarea>
         ) : (
-            <input className="w-full px-3 py-2 border rounded" type={type} id={name} name={name} placeholder={placeholder} required={required} maxLength={maxLength} minLength={minLength} defaultValue={stateValue as string} disabled={disabled} />
+            <input className="field" type={type} id={name} name={name} placeholder={placeholder} required={required} maxLength={maxLength} minLength={minLength} defaultValue={stateValue as string} disabled={disabled} />
         )}
-        {warning && <p className="text-red-500 text-sm mt-1">{warning}</p>}
+        {warning && <p className="mt-1.5 text-meta text-danger">{warning}</p>}
     </div>;
 };
 
 const CreationForm = ({ title, buttonText, buttonLoadingText, onSubmit, loading, fields, disclaimer, formDisabled }: CreationFormProps) => {
     return <>
-    <div className="p-8 max-w-lg mx-auto md:border md:border-gray-200 rounded-lg py-16">
-        <form className="max-w-sm mx-auto" onSubmit={onSubmit}>
-            <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
+    <div className="mx-auto max-w-lg sm:pt-4">
+        <form className="card sm:p-10" onSubmit={onSubmit}>
+            <h1 className="mb-8 text-center text-h2 font-semibold">{title}</h1>
             {fields.map(field => (
                 <FormField key={field.name} {...field} disabled={formDisabled} />
             ))}
-            {disclaimer && <p className="text-gray-500 text-sm mb-4">{disclaimer}</p>}
-            <button className="button button-primary w-full" type="submit" disabled={loading || formDisabled}>
+            {disclaimer && <p className="mb-5 text-meta text-legend">{disclaimer}</p>}
+            <button className="button-primary mt-2 min-h-11 w-full text-body" type="submit" disabled={loading || formDisabled}>
                 {loading ? (buttonLoadingText || "Submitting...") : (buttonText || "Submit")}
             </button>
         </form>

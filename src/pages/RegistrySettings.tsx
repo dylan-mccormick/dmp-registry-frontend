@@ -1,6 +1,8 @@
 import { useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import apiClient from "../apiClient";
+import PageHeader from "../components/PageHeader";
+import { SettingsActions, SettingsGroup, SettingsRow } from "../components/SettingsGroup";
 import StandardLayout from "../components/StandardLayout";
 import { BannerContext } from "../context/BannerContext";
 import { LoadingBannerContext } from "../context/LoadingBannerContext";
@@ -130,34 +132,31 @@ const RegistrySettings = () => {
 
     return <>
         <StandardLayout title="Registry Settings" navbarLevel={NavbarLevel.REGISTRY} >
-            <div className="p-8">
-                <span className="text-3xl font-bold">Registry Settings</span>
-                <div className="flex flex-col items-center" >
-                <form onSubmit={handleSubmit} className="mt-4 w-full sm:w-lg">
-                    <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 items-center">
-                        <label htmlFor="registryId" className="text-right">ID</label>
-                        <input type="text" id="registryId" name="registryId" maxLength={255} className="px-3 py-2 border rounded bg-gray-100" defaultValue={registry?.id} disabled />
-
-                        <label htmlFor="name" className="text-right">Name</label>
-                        <input type="text" id="name" name="name" maxLength={255} className="px-3 py-2 border rounded" defaultValue={registry?.name} required />
-
-                        <label htmlFor="type" className="text-right">Type</label>
-                        <input type="text" id="type" name="type" className="px-3 py-2 border rounded bg-gray-100" defaultValue={registry?.type} disabled />
-
-                        <label htmlFor="createdAt" className="text-right">Created At</label>
-                        <input type="text" id="createdAt" name="createdAt" className="px-3 py-2 border rounded bg-gray-100" defaultValue={registry ? registry.createdAt.toLocaleString() : ""} disabled />
-
-                        <div /> {/* empty cell */}<div /> {/* empty cell */}
-                        <div /> {/* empty cell */}
-                        <button type="submit" className="button-primary" disabled={processes.has("updating_registry")}>Save Changes</button>
-                        <div /> {/* empty cell */}
-                        <button type="button" className="button-secondary border-red-500" disabled={processes.has("deleting_registry")} onClick={handleDelete}>
+            <div className="page">
+                <PageHeader eyebrow={registry?.name} title="Settings" />
+                <form onSubmit={handleSubmit} className="max-w-3xl">
+                    <SettingsGroup title="General">
+                        <SettingsRow label="Name" htmlFor="name">
+                            <input type="text" id="name" name="name" maxLength={255} className="field" defaultValue={registry?.name} required />
+                        </SettingsRow>
+                        <SettingsRow label="Type">
+                            <span className="field-static">{registry?.type}</span>
+                        </SettingsRow>
+                        <SettingsRow label="ID">
+                            <span className="field-static font-mono text-meta">{registry?.id}</span>
+                        </SettingsRow>
+                        <SettingsRow label="Created">
+                            <span className="field-static">{registry ? registry.createdAt.toLocaleString() : ""}</span>
+                        </SettingsRow>
+                    </SettingsGroup>
+                    <SettingsActions destructive={
+                        <button type="button" className="button-destructive" disabled={processes.has("deleting_registry")} onClick={handleDelete}>
                             Delete Registry
                         </button>
-                    </div>
+                    }>
+                        <button type="submit" className="button-primary" disabled={processes.has("updating_registry")}>Save Changes</button>
+                    </SettingsActions>
                 </form>
-
-            </div>
             </div>
         </StandardLayout>
     </>

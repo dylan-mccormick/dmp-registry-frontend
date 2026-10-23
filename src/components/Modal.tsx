@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState, type Dispatch, type SetStateAction } from "react";
 
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Upload } from "lucide-react";
 import { ModalContext } from "../context/ModalContext";
 import { formatSize } from "../utils/formatSize";
 import { FormField } from "./CreationForm";
@@ -36,11 +36,11 @@ const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesCha
     };
 
     return (
-        <div className="flex flex-col gap-3 py-3">
+        <div className="flex flex-col gap-3 pb-2">
             {/* Drop zone */}
             <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                    dragging ? 'border-primary bg-blue-50' : 'border-gray-300 hover:border-primary'
+                className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors ${
+                    dragging ? 'border-blue bg-blue/5' : 'border-rule bg-surface hover:border-blue/50'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
@@ -51,7 +51,8 @@ const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesCha
                 }}
                 onClick={() => document.getElementById('file-upload-input')?.click()}
             >
-                <p className="text-gray-500 text-sm">Drag and drop files here, or click to select</p>
+                <Upload className={`size-6 ${dragging ? 'text-blue' : 'text-legend'}`} />
+                <p className="text-meta text-legend">Drop files here, or <span className="text-signal">browse</span></p>
                 <input
                     id="file-upload-input"
                     type="file"
@@ -64,17 +65,17 @@ const FilesUpload = ({ filesLimit, sizeLimit, acceptedFileExtensions, onFilesCha
 
             {/* Preview */}
             {files.length > 0 && (
-                <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                <div className="flex max-h-40 flex-col divide-y divide-rule/60 overflow-y-auto rounded-xl bg-surface">
                     {files.map((file, i) => (
-                        <div key={i} className="flex justify-between items-center border border-gray-300 rounded px-3 py-2 text-sm">
+                        <div key={i} className="flex items-center justify-between px-3.5 py-2.5 text-meta">
                             <span className="truncate mr-4">{file.name}</span>
-                            <span className="text-gray-400 shrink-0">{formatSize(file.size)}</span>
+                            <span className="shrink-0 text-legend">{formatSize(file.size)}</span>
                         </div>
                     ))}
                 </div>
             )}
 
-            <span className="text-red-500">{errorText}</span>
+            {errorText && <span className="text-meta text-danger">{errorText}</span>}
         </div>
     );
 };
@@ -110,50 +111,52 @@ const Modal = () => {
     }, [config, files, inputValue, onClose]);
 
     return config && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
-                <h2 className="text-lg font-bold mb-2">{config.title}</h2>
-                {config.message && <p className="text-gray-600 mb-4">{config.message}</p>}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4 backdrop-blur-sm animate-fade-in">
+            <div role="dialog" aria-modal="true" aria-labelledby="modal-title" className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-bg p-7 shadow-[0_24px_80px_rgb(0_0_0/0.18)] animate-pop-in">
+                <h2 id="modal-title" className="text-h3 font-semibold">{config.title}</h2>
+                {config.message && <p className="mt-2 text-body text-legend">{config.message}</p>}
+                <div className="mt-5 empty:hidden">
+                    {config.monoContent && (
+                        <div className="mb-4 flex max-h-40 flex-col overflow-y-auto rounded-xl bg-surface p-3.5 font-mono text-meta break-all select-all">
+                            <span>{config.monoContent}</span>
+                        </div>
+                    )}
 
-                {config.monoContent && (
-                    <div className="flex flex-col space-y-2 bg-gray-100 p-3 rounded font-mono text-sm break-all max-h-40 overflow-y-auto">
-                        <span>{config.monoContent}</span>
-                    </div>
-                )}
+                    {(config.type === 'input' || config.type === 'password') && (
+                        <input
+                            autoFocus
+                            type={config.type === 'password' ? 'password' : 'text'}
+                            placeholder={config.placeholder}
+                            value={inputValue}
+                            onChange={e => setInputValue(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+                            className="field"
+                        />
+                    )}
 
-                {(config.type === 'input' || config.type === 'password') && (
-                    <input
-                        autoFocus
-                        type={config.type === 'password' ? 'password' : 'text'}
-                        placeholder={config.placeholder}
-                        value={inputValue}
-                        onChange={e => setInputValue(e.target.value)}
-                        className="w-full px-3 py-2 border rounded mb-4"
-                    />
-                )}
+                    {config.type === 'form' && <>
+                        <form id="modal-form" onSubmit={e => e.preventDefault()} className="mb-1">
+                            {config.formFields?.map((field) => <FormField key={field.name} {...field} />)}
+                        </form>
+                    </>}
 
-                {config.type === 'form' && <>
-                    <form id="modal-form" onSubmit={e => e.preventDefault()} className="space-y-4">
-                        {config.formFields?.map((field) => <FormField key={field.name} {...field} />)}
-                    </form>
-                </>}
+                    {config.type == "files" && <>
+                        <FilesUpload
+                            filesLimit={config.fileUploadConfig?.filesLimit}
+                            acceptedFileExtensions={config.fileUploadConfig?.acceptedFileExtensions}
+                            sizeLimit={config.fileUploadConfig?.sizeLimit}
+                            onFilesChange={setFiles}
+                        />
+                    </>}
 
-                {config.type == "files" && <>
-                    <FilesUpload
-                        filesLimit={config.fileUploadConfig?.filesLimit}
-                        acceptedFileExtensions={config.fileUploadConfig?.acceptedFileExtensions}
-                        sizeLimit={config.fileUploadConfig?.sizeLimit}
-                        onFilesChange={setFiles}
-                    />
-                </>}
+                    {config.type === 'custom' && config.content}
 
-                {config.type === 'custom' && config.content}
+                    {config.loadingSpinner && <div className="flex items-center justify-center py-4">
+                        <LoaderCircle className="size-8 animate-spin text-legend" />
+                    </div>}
+                </div>
 
-                {config.loadingSpinner && <div className="flex items-center justify-center">
-                    <LoaderCircle className="w-12 h-12 animate-spin text-primary" />
-                </div>}
-
-                <div className="flex gap-2 justify-end">
+                <div className="mt-7 flex justify-end gap-2 empty:hidden">
                     {config.type !== 'buttonless' && config.type !== 'custom' && <>
                         {config.type !== 'alert' && (
                             <button className="button-secondary" onClick={() => {

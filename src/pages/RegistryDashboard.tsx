@@ -41,7 +41,7 @@ const RegistryDashboard = () => {
         <>
             <StandardLayout navbarLevel={NavbarLevel.REGISTRY}>
                 {!processes.has("loading_registry") &&
-                <div className="p-8">
+                <div className="page">
                     <div>
                         {(() => {
                             switch (registry?.type) {
@@ -55,7 +55,7 @@ const RegistryDashboard = () => {
                                     return <KeyValueController />;
                                 default:
                                     return (
-                                        <div className="border-red-500 bg-red-200 border br rounded p-4 text-red-900">
+                                        <div className="card text-center text-body text-legend">
                                             Sorry, the controller for this
                                             registry type has not yet been
                                             implemented.
