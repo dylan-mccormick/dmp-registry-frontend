@@ -192,8 +192,8 @@ const RegistryUserCard = ({ username, id, roles, setRefreshKey }: RegistryUserCa
         <div className="flex flex-row items-center justify-between gap-4 px-5 py-3">
             <div className="flex min-w-0 items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-bg text-xs font-semibold uppercase text-legend">{username.charAt(0)}</span><span className="truncate text-body">{username}</span></div>
             <div className="flex shrink-0 flex-row items-center gap-2">
-                <button className="button-tertiary" onClick={onEditUser}>{ dropdownOpen ? "Hide" : "Edit" }</button>
-                <button className="button-destructive" onClick={onDeleteUser}>Delete</button>
+                <button className="button-tertiary" onClick={onEditUser} aria-expanded={dropdownOpen} aria-label={`${dropdownOpen ? "Hide" : "Edit"} roles for ${username}`}>{ dropdownOpen ? "Hide" : "Edit" }</button>
+                <button className="button-destructive" onClick={onDeleteUser} aria-label={`Delete ${username}`}>Delete</button>
             </div>
         </div>
         {dropdownOpen && dropdownComponent}

@@ -39,7 +39,7 @@ const RegistryDashboard = () => {
 
     return (
         <>
-            <StandardLayout navbarLevel={NavbarLevel.REGISTRY}>
+            <StandardLayout navbarLevel={NavbarLevel.REGISTRY} title={registry?.name}>
                 {!processes.has("loading_registry") &&
                 <div className="page">
                     <div>

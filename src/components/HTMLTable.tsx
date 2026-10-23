@@ -34,14 +34,15 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
     }, [searchOpen, col.dataKey, setSearchTerm, searchKey]);
 
     return <>
-        <th className="min-w-37.5 border-b border-rule/60 bg-surface px-4 py-2.5 text-left text-xs font-semibold text-legend sm:min-w-45" key={index}>
+        <th aria-sort={sortKey === col.dataKey ? (sortDirection === "asc" ? "ascending" : "descending") : undefined} className="min-w-37.5 border-b border-rule/60 bg-surface px-4 py-2.5 text-left text-xs font-semibold text-legend sm:min-w-45" key={index}>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 w-full">
                 <div className={`flex flex-row justify-between items-center sm:flex-1 sm:min-w-0 ${col.queryable !== false ? "sm:max-w-[calc(100%-60px)]" : ""}`}>
                     {searchOpen ? (
                         <input
                             type="text"
                             autoFocus
-                            className="mr-2 hidden h-7 w-full min-w-0 rounded-lg border border-rule bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:block"
+                            aria-label={`Search ${col.text}`}
+                            className="mr-2 hidden h-7 w-full min-w-0 rounded-lg border border-control bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:block"
                             placeholder={`Search ${col.text.toLowerCase()}…`}
                             onChange={(e) => setSearchTerm(col.dataKey, e.target.value.length > 0 ? e.target.value : null)}
                         />
@@ -68,7 +69,8 @@ const ColumnHeader = <T,>({ col, index, sortKey, sortDirection, toggleSortBy, se
                 {searchOpen && (
                     <input
                         type="text"
-                        className="h-8 w-full rounded-lg border border-rule bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:hidden"
+                        aria-label={`Search ${col.text}`}
+                        className="h-8 w-full rounded-lg border border-control bg-bg px-2.5 text-meta font-normal text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 sm:hidden"
                         placeholder={`Search ${col.text.toLowerCase()}…`}
                         onChange={(e) => setSearchTerm(col.dataKey, e.target.value.length > 0 ? e.target.value : null)}
                     />
@@ -218,7 +220,7 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
                                 <span>{unpagedResultCount === 0 ? "No results" : <>{currentPage * itemsPerPage - itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, unpagedResultCount)} of {unpagedResultCount}</>}</span>
                                 <label className="flex flex-row items-center gap-2" >
                                     <span>Per page</span>
-                                    <select className="h-7 cursor-pointer rounded-lg border border-rule bg-bg px-1.5 text-meta text-ink" value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} >
+                                    <select className="h-7 cursor-pointer rounded-lg border border-control bg-bg px-1.5 text-meta text-ink" value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} >
                                         <option value={10}>10</option>
                                         <option value={25}>25</option>
                                         <option value={50}>50</option>
@@ -238,7 +240,7 @@ const HTMLTable = <T,>({ data, columns }: HTMLTableProps<T>) => {
                                 <input
                                     type="number"
                                     aria-label="Page"
-                                    className="h-7 w-12 rounded-lg border border-rule bg-bg text-center text-meta text-ink [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="h-7 w-12 rounded-lg border border-control bg-bg text-center text-meta text-ink [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                                     value={pageInput}
                                     onChange={handlePageInputChange}
                                     onBlur={commitPageInput}

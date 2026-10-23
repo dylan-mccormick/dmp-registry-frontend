@@ -36,6 +36,7 @@ const RegistryGridCard = ({ registry }: { registry: RegistrySummary }) => {
             <button
                 className="group relative flex h-full w-full cursor-pointer flex-col rounded-3xl bg-surface p-6 text-left transition-colors duration-200 hover:bg-rule/40 sm:p-7"
                 onClick={navigateAway}
+                aria-label={`${registry.name}, ${registryTypeLabel(registry.type)} registry, owned by ${registry.owner ?? "nobody"}, created ${formatDateShort(registry.createdAt)}`}
             >
                 <div className="mb-10 flex items-start justify-between gap-4">
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-bg text-ink [&>svg]:size-5">
