@@ -1,5 +1,5 @@
-import { ChevronRight, Database, FolderClosed, KeyRound, Leaf, Plus } from "lucide-react";
-import { useContext, useEffect, useState, type ReactNode } from "react";
+import { ChevronRight, Database, Plus } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../apiClient";
 import PageHeader from "../components/PageHeader";
@@ -8,14 +8,8 @@ import { LoadingBannerContext } from "../context/LoadingBannerContext";
 import { NavbarLevel } from "../context/NavbarLevel";
 import { RegistryContext } from "../context/RegistryContext";
 import { UserContext } from "../context/UserContext";
-
-interface RegistryMetadata {
-    id: string;
-    name: string;
-    owner?: string;
-    type: string;
-    createdAt: string;
-}
+import type { RegistrySummary } from "../model/RegistrySummary";
+import { formatDateShort, registryTypeIcon, registryTypeLabel } from "../utils/registryDisplay";
 
 const fetchRegistries = async () => {
     return apiClient.get("/api/v1/registries/list/me").then((res) => {
@@ -27,14 +21,7 @@ const fetchRegistries = async () => {
     });
 };
 
-const registryTypeDisplay: Record<string, { label: string; icon: ReactNode }> = {
-    files: { label: "Files", icon: <FolderClosed /> },
-    mongodb: { label: "MongoDB", icon: <Leaf /> },
-    sqlite: { label: "SQLite", icon: <Database /> },
-    keyvalue: { label: "Key-Value", icon: <KeyRound /> },
-};
-
-const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
+const RegistryGridCard = ({ registry }: { registry: RegistrySummary }) => {
     const navigate = useNavigate();
 
     const { setRegistry } = useContext(RegistryContext);
@@ -52,16 +39,16 @@ const RegistryGridCard = ({ registry }: { registry: RegistryMetadata }) => {
             >
                 <div className="mb-10 flex items-start justify-between gap-4">
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-bg text-ink [&>svg]:size-5">
-                        {registryTypeDisplay[registry.type]?.icon ?? <Database />}
+                        {registryTypeIcon(registry.type)}
                     </span>
-                    <span className="chip">{registryTypeDisplay[registry.type]?.label ?? registry.type}</span>
+                    <span className="chip">{registryTypeLabel(registry.type)}</span>
                 </div>
                 <h2 className="mb-2 flex items-center gap-1 text-h3 font-semibold break-words">
                     <span className="min-w-0">{registry.name}</span>
                     <ChevronRight className="size-5 shrink-0 text-legend transition-transform duration-200 group-hover:translate-x-0.5" />
                 </h2>
                 <p className="text-meta text-legend">
-                    {registry.owner ?? "Unassigned"} · Created {new Date(registry.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                    {registry.owner ?? "Unassigned"} · Created {formatDateShort(registry.createdAt)}
                 </p>
             </button>
         </>
@@ -77,7 +64,7 @@ const Dashboard = () => {
 
     const navigate = useNavigate();
 
-    const [registries, setRegistries] = useState<RegistryMetadata[]>([]);
+    const [registries, setRegistries] = useState<RegistrySummary[]>([]);
 
     useEffect(() => {
         addProcess("fetching_registries");
