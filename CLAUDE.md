@@ -31,7 +31,7 @@ React 19 + TypeScript + Vite SPA frontend for the DMP Registry — a system wher
 
 **Layout & navigation** — Pages wrap content in `StandardLayout` with a `navbarLevel` (`NavbarLevel.TOP` for app-level pages, `REGISTRY` for registry pages, `HIDDEN`). The sidebar items are generated there from global user permissions (`UserPermission`) and registry-local permissions (`RegistryUserPermissions`, `isOwner`), so permission-gated navigation is edited in `StandardLayout.tsx`. Routes are all declared in `App.tsx`.
 
-**Registry type controllers** — `RegistryDashboard` switches on `registry.type` to render one of `src/components/registryControllers/*Controller.tsx`. Adding a registry type means updating `model/RegistryType.ts` and that switch.
+**Registry type controllers** — `RegistryDashboard` switches on `registry.type` to render one of `src/components/registryControllers/*Controller.tsx`. Adding a registry type means updating `model/RegistryType.ts` and that switch. Controllers share `ResourceList` (table/collection picker) and `JsonEditor`, and surface backend errors with `utils/readApiError.ts`, which reads the `{ error }` body that backend 4xx responses return.
 
 ## Design system
 
