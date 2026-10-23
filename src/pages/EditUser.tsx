@@ -1,4 +1,4 @@
-import { Gauge, Settings, UsersRound } from "lucide-react";
+import { Database, Gauge, Settings, UsersRound } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import apiClient from "../apiClient";
@@ -10,11 +10,92 @@ import { BannerContext } from "../context/BannerContext";
 import { ModalContext } from "../context/ModalContext";
 import { UserContext } from "../context/UserContext";
 import { LoadingBannerContext } from "../context/LoadingBannerContext";
+import { RegistryContext } from "../context/RegistryContext";
+import type { RegistrySummary, UserRegistrySummary } from "../model/RegistrySummary";
+import { formatDateShort, registryPermissionLabels, registryTypeIcon, registryTypeLabel } from "../utils/registryDisplay";
 
 type Tab = 'registries' | 'roles' | 'profile';
 
-const RegistriesPanel = () => {
-    return <div className="card text-center text-meta text-legend">Registry memberships will appear here.</div>
+const RegistriesPanel = ({ targetUserId }: { targetUserId: string }) => {
+    const navigate = useNavigate();
+
+    const { setBanner } = useContext(BannerContext);
+    const { setRegistry } = useContext(RegistryContext);
+    const { processes, addProcess, removeProcess } = useContext(LoadingBannerContext);
+
+    const [ registries, setRegistries ] = useState<UserRegistrySummary[]>([]);
+    // Registries the current (admin) user can open themselves
+    const [ accessibleIds, setAccessibleIds ] = useState<Set<number>>(new Set());
+
+    useEffect(() => {
+        const fetchRegistries = async () => {
+            addProcess("fetching_user_registries");
+            try {
+                const [ userRes, mineRes ] = await Promise.all([
+                    apiClient.get(`/api/v1/registries/list/user/${targetUserId}`),
+                    apiClient.get("/api/v1/registries/list/me")
+                ]);
+
+                if (!userRes.ok) {
+                    setBanner({ level: "error", message: "Failed to load this user's registries." });
+                    return;
+                }
+
+                setRegistries(await userRes.json());
+                if (mineRes.ok) {
+                    const mine = await mineRes.json() as RegistrySummary[];
+                    setAccessibleIds(new Set(mine.map(r => r.id)));
+                }
+            } catch (err) {
+                console.error(err);
+                setBanner({ level: "error", message: "Failed to load this user's registries." });
+            } finally {
+                removeProcess("fetching_user_registries");
+            }
+        };
+
+        fetchRegistries();
+    }, [targetUserId, addProcess, removeProcess, setBanner]);
+
+    if (processes.has("fetching_user_registries")) return null;
+
+    if (registries.length === 0) return <div className="card flex max-w-3xl flex-col items-center py-16 text-center">
+        <span className="mb-4 grid size-12 place-items-center rounded-xl bg-bg text-legend"><Database className="size-5" /></span>
+        <p className="text-body font-medium">No registries</p>
+        <p className="mt-1 text-meta text-legend">This user hasn't created or been added to any registries.</p>
+    </div>;
+
+    const owned = registries.filter(r => String(r.ownerId) === targetUserId).length;
+
+    return <div className="max-w-3xl">
+        <SettingsGroup title="Registries" description={`Member of ${registries.length} ${registries.length === 1 ? "registry" : "registries"}, owner of ${owned}.`}>
+            {registries.map(r => {
+                const isOwner = String(r.ownerId) === targetUserId;
+                return <div key={r.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3.5">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-bg text-ink [&>svg]:size-4.5">{registryTypeIcon(r.type)}</span>
+                        <div className="min-w-0">
+                            <p className="truncate text-body font-medium">{r.name}</p>
+                            <p className="text-meta text-legend">
+                                {registryTypeLabel(r.type)} · {isOwner ? "Owner" : `Owned by ${r.owner ?? "nobody"}`} · Created {formatDateShort(r.createdAt)}
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                {r.permissions.map(p => <span key={p} className="chip">{registryPermissionLabels[p] ?? p}</span>)}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        className="button-tertiary shrink-0 self-start sm:self-center"
+                        disabled={!accessibleIds.has(r.id)}
+                        title={accessibleIds.has(r.id) ? "Open registry" : "You don't have access to this registry"}
+                        onClick={() => { setRegistry(undefined); navigate(`/registries/${r.id}`); }}
+                    >
+                        Open
+                    </button>
+                </div>;
+            })}
+        </SettingsGroup>
+    </div>;
 }
 
 const RolesPanel = ( { targetUserId }: { targetUserId: string } ) => {
@@ -216,6 +297,7 @@ const EditUser = () => {
 
         if (user?.permissions.includes("MANAGE_USERS")) {
             items.push({ text: "User Management", to: "/users", icon: <UsersRound /> });
+            items.push({ text: "Registry Management", to: "/admin/registries", icon: <Database /> });
         }
 
         items.push({ text: "Account", to: "/profile", icon: <Settings /> });
@@ -273,7 +355,7 @@ const EditUser = () => {
                 </div>
 
                 {/* Tab Content */}
-                {activeTab === 'registries' && <RegistriesPanel />}
+                {activeTab === 'registries' && <RegistriesPanel targetUserId={id!} />}
                 {activeTab === 'roles' && <RolesPanel targetUserId={id!} />}
                 {activeTab === 'profile' && <ProfilePanel userId={id!} username={targetUser?.username || ""} email={targetUser?.email || ""} emailVerified={targetUser?.emailVerified || false} createdAt={targetUser?.createdAt || ""} tokenVersion={targetUser?.tokenVersion || 0} />}
 

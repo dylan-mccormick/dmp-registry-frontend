@@ -15,6 +15,7 @@ import Register from './pages/Register.tsx';
 import RegistryAgentManagement from './pages/RegistryAgentManagement.tsx';
 import RegistryAuditLog from './pages/RegistryAuditLog.tsx';
 import RegistryDashboard from './pages/RegistryDashboard.tsx';
+import RegistryManagement from './pages/RegistryManagement.tsx';
 import RegistrySettings from './pages/RegistrySettings.tsx';
 import RegistryUserManagement from './pages/RegistryUserManagement.tsx';
 import Users from './pages/Users.tsx';
@@ -48,6 +49,7 @@ const App = () => {
                             <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
                             <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                         <Route path="/user/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+                        <Route path="/admin/registries" element={<ProtectedRoute><RegistryManagement /></ProtectedRoute>} />
                         <Route path="/registries/new" element={<ProtectedRoute><CreateRegistry /></ProtectedRoute>} />
                         <Route path="/registries/:registryId" element={<ProtectedRoute><RegistryDashboard /></ProtectedRoute>} />
                         <Route path="/registries/:registryId/users" element={<ProtectedRoute><RegistryUserManagement /></ProtectedRoute>} />
