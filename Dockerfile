@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Serving
-FROM nginxinc/nginx-unprivileged:stable-alpine
+FROM ghcr.io/nginx/nginx-unprivileged:1.30.7-alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
